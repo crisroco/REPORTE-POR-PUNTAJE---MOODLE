@@ -88,16 +88,18 @@ $dataobject = new stdClass();
         $enrolmentcopy = 0;
         $newcourseid = $copy_course->id;//curso hijo
         course_template_duplicate_course($newcourseid,$courseid, $fullname, $shortname, $categoryid, (int)$visibility, (int)$enrolmentcopy);
-       
+//       print $OUTPUT->header();
         //ojo
         $child_sections = sync_get_sections($c->courseid);
 
         
            }//fin de if data = section ==> 1 (primer boton de formato)
     } //fin de data enviada del formulario (dos botones)
-
+else{
 //print $OUTPUT->header();
-    foreach($main_modules as $m){
+    
+}
+foreach($main_modules as $m){
       if($object = sync_check_status($m,$c->courseid)){
         if ($data) {
           switch ($object->type) {
