@@ -31,11 +31,11 @@ $act = array();
 $childs =  $DB->get_records('sync_related',array('main_id'=>$id));
 
 $course_modules =  $DB->get_records('sync_modules',array('main_id'=>$id));
-echo '<pre>';
-print_r ($course_modules);
+//echo '<pre>';
+//print_r ($course_modules);
 
-echo'</pre>';
-//exit;
+//echo'</pre>';
+exit;
 $modinfo = get_fast_modinfo($tmp_course);
 
 

@@ -184,7 +184,9 @@ $dataobject = new stdClass();
 
 
 print $OUTPUT->header();
-  if (!$data) {
+  
+echo $output;
+if (!$data) {
     $mform->display();
   }else{
 
@@ -200,7 +202,7 @@ print $OUTPUT->header();
   }
 
 
-echo $output;
+//echo $output;
 
 
 print $OUTPUT->footer();

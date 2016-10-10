@@ -655,7 +655,7 @@ function sync_delete_module($object,$module,$courseid){
   $entity = $DB->get_record('course_modules',array('id'=>$course_module->module_id));
   $instance = $DB->get_record($list[$entity->module],array('id'=>$entity->instance));
   $delete = TRUE;
-  switch ($list[$object->module->module]) {
+  switch ($list[$entity->instance]) {
     case 'quiz':
       $attempts = $DB->get_records('quiz_attempts',array('quiz'=>$instance->id));
       if(!empty($attempts)){
