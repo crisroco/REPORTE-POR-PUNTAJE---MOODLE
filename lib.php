@@ -478,7 +478,8 @@ function sync_create_module($object,$module,$courseid){
       }
     }
 
-    print html_writer::tag('p','Actividad '.$object->instance->name.' creada');
+$output =  html_writer::tag('p','Actividad '.$object->instance->name.' creada');
+return $output;
 }
 
 
@@ -515,7 +516,7 @@ function sync_update_module($object,$module,$courseid){
       $attempts = $DB->get_records('quiz_attempts',array('quiz'=>$course_instance->id));
       if(!empty($attempts)){
         $update = FALSE;
-        print html_writer::tag('p','Actividad '.$course_instance->name.' no se ha actualizado porque ya tiene intentos.');
+        $output =  html_writer::tag('p','Actividad '.$course_instance->name.' no se ha actualizado porque ya tiene intentos.');
       }else{
         course_delete_module($course_module->module_id);
         $newcmid = sync_restore_module($object->module->id,$courseid);
@@ -528,7 +529,7 @@ function sync_update_module($object,$module,$courseid){
       $attempts = $DB->get_records('forum_discussions',array('forum'=>$course_instance->id));
       if(!empty($attempts)){
         $update = FALSE;
-        print html_writer::tag('p','Actividad '.$course_instance->name.' no se ha actualizado porque ya tiene intentos.');
+        $output = html_writer::tag('p','Actividad '.$course_instance->name.' no se ha actualizado porque ya tiene intentos.');
         return true;
       }else{
         course_delete_module($course_module->module_id);
@@ -541,7 +542,7 @@ function sync_update_module($object,$module,$courseid){
       $attempts = $DB->get_records('assign_submission',array('assignment'=>$course_instance->id));
       if(!empty($attempts)){
         $update = FALSE;
-        print html_writer::tag('p','Actividad '.$course_instance->name.' no se ha actualizado porque ya tiene intentos.');
+        $output =  html_writer::tag('p','Actividad '.$course_instance->name.' no se ha actualizado porque ya tiene intentos.');
       }else{
         course_delete_module($course_module->module_id);
         $newcmid = sync_restore_module($object->module->id,$courseid);
@@ -582,9 +583,9 @@ function sync_update_module($object,$module,$courseid){
   $DB->update_record('course_modules',$course_entity);
 
   if($update){
-    print html_writer::tag('p','Actividad '.$object->instance->name.' actualizada');
+    $output = html_writer::tag('p','Actividad '.$object->instance->name.' actualizada');
   }
-
+return $output;
 
 }
 

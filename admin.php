@@ -31,7 +31,7 @@ print $OUTPUT->header();
 
   $table = new html_table();
   $table->head = array('Curso Padre','Cursos Hijos','');
-  $courses = $DB->get_records_menu('course',array(),null,'id,fullname');  
+  $courses = $DB->get_records_menu('course',array(),null,'id,shortname');  
 
   $records = $DB->get_records('sync_main');
   $table->data = array();

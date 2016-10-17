@@ -84,6 +84,7 @@ $dataobject = new stdClass();
         $fullname = $copy_course->fullname;
         $shortname = $copy_course->shortname;
         $categoryid = $copy_course->category;
+        $idnumber = $copy_course->idnumber;
         $visibility = 1;
         $enrolmentcopy = 0;
         $newcourseid = $copy_course->id;//curso hijo
@@ -91,8 +92,9 @@ $dataobject = new stdClass();
 //       print $OUTPUT->header();
         //ojo
         $child_sections = sync_get_sections($c->courseid);
-
-        
+           $curso_hijo = $DB->get_record('course',array('id'=>$newcourseid));
+           $curso_hijo->idnumber = $idnumber;
+           $DB->update_record('course',$curso_hijo);
            }//fin de if data = section ==> 1 (primer boton de formato)
     } //fin de data enviada del formulario (dos botones)
 else{
@@ -104,12 +106,14 @@ foreach($main_modules as $m){
         if ($data) {
           switch ($object->type) {
             case 1:
-              sync_create_module($object,$m,$c->courseid);
-              break;
+              $out = sync_create_module($object,$m,$c->courseid);
+              $output .= $out;
+               break;
             case 2:
              //echo 'hol2';
-              sync_update_module($object,$m,$c->courseid);
-              break;
+             $out = sync_update_module($object,$m,$c->courseid);
+             $output .= $out;  
+            break;
             case 3:
             //echo 'elimina';
               if($data->delete == 1){
@@ -187,10 +191,10 @@ foreach($main_modules as $m){
 
 print $OUTPUT->header();
   
-echo $output;
-if (!$data) {
-    $mform->display();
-  }else{
+//echo $output;
+if ($data) {
+ 
+ 
 
     $dataobject->child_id = $childs_print;
     $dataobject->time_sync = time();
@@ -199,9 +203,12 @@ if (!$data) {
 
     $url = new moodle_url('/course/view.php', array('id' => $courseid));
     $text = 'Continuar'; //Translate this
-    print html_writer::link($url,$text,array('class'=>'btn btn-default'));
-
-  }
+   $output .= html_writer::link($url,$text,array('class'=>'btn btn-default'));
+   print $output;
+  } else{
+print $output;
+$mform->display();
+}
 
 
 //echo $output;
