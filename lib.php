@@ -1,5 +1,6 @@
 <?php
 require_once($CFG->dirroot . '/course/externallib.php');
+require_once($CFG->dirroot . '/blocks/sync/styles.css');
 require_once("$CFG->libdir/externallib.php");
 class core_course_external1 extends external_api {
 
@@ -427,13 +428,15 @@ function sync_check_deletes($module,$courseid){
 }
 
 function generate_progressbar($percent){
-  $progress = html_writer::tag('div',$percent . '%',array('class' => 'progress-bar progress-bar-striped active', 
+
+    
+  $progress = html_writer::tag('div',$percent . '%',array('class' => 'progress-bar progress-bar-striped active',
                                         'role' => 'progressbar',
                                         'aria-valuenow' => $percent, 
                                         'aria-valuemin' => '0',
                                         'aria-valuemax' => '100',
                                         'style' => 'width:' . $percent . '%'));
-    $progressbar = html_writer::tag('div',$progress, array('class' => 'progress'));
+    $progressbar = html_writer::tag('div',$progress, array('class' => 'progress','id' => 'pb'));
 
     return $progressbar;
 }
