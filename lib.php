@@ -1,7 +1,8 @@
 <?php
 require_once($CFG->dirroot . '/course/externallib.php');
-require_once($CFG->dirroot . '/blocks/sync/styles.css');
+//require_once($CFG->dirroot . '/blocks/sync/styles.css');
 require_once("$CFG->libdir/externallib.php");
+echo '<link href="styles.css" rel="stylesheet">';
 class core_course_external1 extends external_api {
 
 
