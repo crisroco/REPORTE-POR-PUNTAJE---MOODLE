@@ -30,11 +30,15 @@ $act = array();
 
 $childs =  $DB->get_records('sync_related',array('main_id'=>$id));
 
-$course_modules =  $DB->get_records('sync_modules',array('main_id'=>$id));
-//echo '<pre>';
-//print_r ($course_modules);
+//$course_modules =  $DB->get_records('sync_modules',array('main_id'=>$id));
+//ordenar por modulos
+$itemss = "SELECT sm.id, sm.module_id, cm.module, sm.main_id FROM {sync_modules} sm
+	INNER JOIN {course_modules} cm ON sm.module_id = cm.id
+	WHERE sm.main_id IN (?)	
+	ORDER BY cm.module ASC, sm.module_id DESC ";
+$course_modules = $DB->get_records_sql($itemss, array($id));
+//FIN ordenar por modulos
 
-//echo'</pre>';
 
 $modinfo = get_fast_modinfo($tmp_course);
 
@@ -62,11 +66,17 @@ $table = new html_table();
 $table->head = array('Actividades','Hijos Sincornizados','Agregar', 'Actualizar' , 'Eliminar');
 
 
+
 foreach ($course_modules as $key => $value) {
 //$cm = $modinfo->get_cm($value->id);
 	//$cm = get_coursemodule_from_id('mod_name', $value->main_id, 0, false, MUST_EXIST);
+	//$itemss = "SELECT * FROM {course_modules} cm WHERE cm.id =".$value->module_id." GROUP BY " ;
+
         $exist = $DB->get_record('course_modules',array('id'=>$value->module_id) );
-        if ($exist){
+       /* echo "<pre>";
+        	print_r($itemm);
+        echo "</pre>";*/
+  if ($exist){
 	$class = '';
 	$cont_total = 0;
 	$creates = 0;
@@ -106,8 +116,8 @@ foreach ($course_modules as $key => $value) {
 	}
 
 	//echo $value->module_id;
-$cm = $modinfo->get_cm($value->module_id);
-$modinfo = get_fast_modinfo($tmp_course);	
+	$cm = $modinfo->get_cm($value->module_id);
+	$modinfo = get_fast_modinfo($tmp_course);	
 
 
 	$tm = new stdClass();
@@ -127,7 +137,7 @@ $modinfo = get_fast_modinfo($tmp_course);
 									$creates + $updates + $deletes, $cont_total)), $creates,$updates,$deletes);
 
 	//$out_mods .= html_writer::tag('p', . $cm->name  . ' ' . $cont_unit . '/' . $cont_total, array('class' => $class));
-}
+  }
 }
 
 $table_users = new html_table();
