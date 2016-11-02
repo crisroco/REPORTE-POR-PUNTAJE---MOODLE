@@ -139,8 +139,6 @@ $parent = (count($parents)/$padres)*100;
   }
 
 
-
-
   print html_writer::tag('link','',array('href'=>$CFG->wwwroot.'/blocks/sync/assets/css/select2.css','rel'=>'stylesheet'));
    $PAGE->requires->js_call_amd('block_sync/module', 'init');
   
