@@ -25,6 +25,8 @@ if ($mform->is_cancelled()) {
 
   $main_id = $DB->insert_record('sync_main', array('courseid'=>$data->id));
 
+  
+
   $modules = $DB->get_records('course_modules',array("course"=> $data->id));
 
   $k = 0;
@@ -58,6 +60,7 @@ $PAGE->requires->js_call_amd('block_sync/module', 'init');
     $mform->display();
 
 
+    
     
 print $OUTPUT->footer();
 

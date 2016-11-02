@@ -4,6 +4,7 @@ global $DB, $PAGE, $OUTPUT;
 
 require_once("../../config.php");
 require_once($CFG->libdir.'/adminlib.php');
+require_once($CFG->libdir . '/formslib.php');
 include('lib.php');
 // Input params
 
@@ -64,7 +65,7 @@ $hijos = key($child);
 $padres = key($parent);
 $child =  (count($children)/$hijos)*100;
 $parent = (count($parents)/$padres)*100;
-
+//FIN Porcentaje de cincronizacion de cursos padres e hijos
 
   print html_writer::empty_tag('br');
 
@@ -79,35 +80,76 @@ $parent = (count($parents)/$padres)*100;
   $courses = $DB->get_records_menu('course',array(),null,'id,fullname');  
 
   $records = $DB->get_records('sync_main');
-  //$table->data = array();
 
-  foreach($records as $r){
-    $line = array();
-    $line[] = $courses[$r->courseid];
+  //combo de cusrsos padres
 
-    /*$childs =  $DB->get_records('sync_related',array('main_id'=>$r->id));
+  $out = '<select onchange="window.location=this.options[this.selectedIndex].value" onmousedown="if(  this.options.length>8){this.size=10;}" onblur="this.size=0;" class="select2">    
+    <option value="">Selecione curso padre</option>
+    <option value="http://moodle.dev/blocks/sync/report.php">Todos los cursos</option>';
 
-    $l = array();
-    foreach($childs as $c){
-      $l[] = html_writer::tag('p',$courses[$c->courseid]);
-    }
+ 
 
-    $line[] = implode('', $l);*/
+  foreach ($records as $key => $value) {
 
-
-    $links = '';
-    $url = new moodle_url('/blocks/sync/dashboard.php',array('id'=>$r->id, 'courseid' => $r->courseid));
-    $text = 'Explorar'; //Translate this
-    $links .= html_writer::link($url,$text,array('class'=>'btn btn-default'));
-
-
-    $line[] = $links;
-    $table->data[] = $line;
+    $out .=  '<option value="http://moodle.dev/blocks/sync/report.php?id='.$value->courseid.'">'.$courses[$value->courseid].'</option>';
   }
 
+  $out .= '</select>';
+  //FIN combo de cusrsos padres
+
+ 
+
+  if (!isset($_GET['id']) || $_GET['id'] == '') {
+      foreach($records as $r){
+        $line = array();
+        $line[] = $courses[$r->courseid];
+
+        $links = '';
+        $url = new moodle_url('/blocks/sync/dashboard.php',array('id'=>$r->id, 'courseid' => $r->courseid));
+        $text = 'Explorar'; //Translate this
+        $links .= html_writer::link($url,$text,array('class'=>'btn btn-default'));
+
+
+        $line[] = $links;
+        $table->data[] = $line;
+       
+    }
+    
+  }else{
+    foreach($records as $r){
+      if ($r->courseid == $_GET['id']) {
+        $id = $r->id;
+      }else{
+        continue;
+      }
+    
+      $line = array();
+      $line[] = $courses[$_GET['id']];
+      $links = '';
+      $url = new moodle_url('/blocks/sync/dashboard.php',array('id'=>$id, 'courseid' => $_GET['id']));
+      $text = 'Explorar'; //Translate this
+      $links .= html_writer::link($url,$text,array('class'=>'btn btn-default'));
+
+
+      $line[] = $links;
+      $table->data[] = $line;
+      break;
+    }
+
+  }
+
+
+
+
+  print html_writer::tag('link','',array('href'=>$CFG->wwwroot.'/blocks/sync/assets/css/select2.css','rel'=>'stylesheet'));
+   $PAGE->requires->js_call_amd('block_sync/module', 'init');
   
 
   echo html_writer::table($table2);
+  //echo html_writer::select($course, 'choosenumber',array('class'=>'select2'));
+  echo $out;
+  print html_writer::empty_tag('br');
+  print html_writer::empty_tag('br');
   echo html_writer::table($table);
 
 
