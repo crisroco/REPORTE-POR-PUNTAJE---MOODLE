@@ -65,6 +65,8 @@ $table->head = array('Actividades','Hijos Sincornizados','Agregar', 'Actualizar'
 foreach ($course_modules as $key => $value) {
 //$cm = $modinfo->get_cm($value->id);
 	//$cm = get_coursemodule_from_id('mod_name', $value->main_id, 0, false, MUST_EXIST);
+        $exist = $DB->get_record('course_modules',array('id'=>$value->module_id) );
+        if ($exist){
 	$class = '';
 	$cont_total = 0;
 	$creates = 0;
@@ -125,7 +127,7 @@ $modinfo = get_fast_modinfo($tmp_course);
 									$creates + $updates + $deletes, $cont_total)), $creates,$updates,$deletes);
 
 	//$out_mods .= html_writer::tag('p', . $cm->name  . ' ' . $cont_unit . '/' . $cont_total, array('class' => $class));
-
+}
 }
 
 $table_users = new html_table();
