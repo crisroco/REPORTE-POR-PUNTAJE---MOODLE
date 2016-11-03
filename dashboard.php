@@ -30,18 +30,72 @@ $act = array();
 
 $childs =  $DB->get_records('sync_related',array('main_id'=>$id));
 
+
+//===================ordenar por modulos=======================
 //$course_modules =  $DB->get_records('sync_modules',array('main_id'=>$id));
-//ordenar por modulos
 $itemss = "SELECT sm.id, sm.module_id, cm.module, sm.main_id FROM {sync_modules} sm
 	INNER JOIN {course_modules} cm ON sm.module_id = cm.id
 	WHERE sm.main_id IN (?)	
 	ORDER BY cm.module ASC, sm.module_id DESC ";
 $course_modules = $DB->get_records_sql($itemss, array($id));
-//FIN ordenar por modulos
+//==================FIN ordenar por modulos=======================
+
+//===============Tabla de Datos================
+$table_datos = new html_table();
+$table_datos->head = array('Curso','Nombre','N de secciones','formato', 'coordinador');
+
+$curso = "SELECT suh.id, suh.main_id, suh.child_id FROM {sync_user_history} suh
+			WHERE suh.main_id in (?)
+			ORDER BY suh.main_id ASC, suh.time_sync DESC";
+$cursos = $DB->get_records_sql($curso,array($_GET['courseid']));
+array_pop($cursos);
+$ids = array();
+foreach ($cursos as $key => $value) {
+	$ids[$value->main_id] =  $value->main_id;
+	$child = explode(',', $value->child_id);
+	array_pop($child);
+	foreach ($child as $value) {
+		$ids[$value] =  $value;
+	}
+}
+$cont = 0;
+foreach ($ids as $key => $value) {
+	$coord = '';
+	$coordinador = "SELECT CONCAT(u.firstname,' ', u.lastname) as coordinador FROM {course} c
+					INNER JOIN {context} ctx ON ctx.instanceid = c.id
+					INNER JOIN {role_assignments} ra ON ctx.id = ra.contextid
+					INNER JOIN {role} r ON r.id = ra.roleid
+					INNER JOIN {user} u ON u.id = ra.userid
+					WHERE r.id = 3 and c.id IN (?)";
+	$coordinadores = $DB->get_records_sql($coordinador, array($value));				
+	foreach ($coordinadores as $ke => $valu) {
+		$coord = $valu->coordinador;		
+	}
+	$dato = "SELECT c.id, c.shortname,  COUNT(cs.section) as sections, c.format as formato
+		  FROM {course} c 
+		  INNER JOIN {course_sections} cs ON c.id = cs.course
+		  where c.id IN (?) 
+		  GROUP BY c.shortname";
+
+	$datos = $DB->get_records_sql($dato, array($value));
+
+	foreach ($datos as $key => $value) {
+		$value->coordinador = $coord;
+		
+		if ($value->id == $_GET['courseid']) {
+			$crs = 'Padre';
+		}else{
+			$crs = 'Hijo ' . $cont;
+		}
+
+		$table_datos->data[] = array($crs, $value->shortname, $value->sections,$value->formato, $value->coordinador);
+		$cont++;
+	}
+}
+//==============FIN Tabla de Datos============
 
 
 $modinfo = get_fast_modinfo($tmp_course);
-
 
 $table_hijos = new html_table();
 $table_hijos->head = array('Hijos','Sincronizado','');
@@ -50,6 +104,7 @@ $l = array();
     $courses = array();
     foreach($childs as $c){
     	$tmp = get_course($c->courseid);
+    	
     	$courses[] = $tmp;
 
     	$percent = sync_check_course($id,$c->courseid);
@@ -194,6 +249,7 @@ print html_writer::tag('link','',array('href'=>$CFG->wwwroot.'/blocks/sync/asset
 
     //echo $line;
 
+	echo html_writer::table($table_datos);
 	echo html_writer::table($table_hijos);
 	echo html_writer::table($table);
 	echo html_writer::table($table_users);
