@@ -42,7 +42,7 @@ $course_modules = $DB->get_records_sql($itemss, array($id));
 
 //===============Tabla de Datos================
 $table_datos = new html_table();
-$table_datos->head = array('Curso','Nombre','N de secciones','formato', 'coordinador');
+$table_datos->head = array('Curso','Nombre','N de secciones','Formato', 'Coordinador');
 
 $curso = "SELECT suh.id, suh.main_id, suh.child_id FROM {sync_user_history} suh
 			WHERE suh.main_id in (?)
