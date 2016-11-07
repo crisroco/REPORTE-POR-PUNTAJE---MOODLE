@@ -64,7 +64,7 @@ $table = new html_table();
 $table->head = array('Actividades sin sincronizar');
 
 $modinfo = get_fast_modinfo($parent);
-if (empty($prntonly)) {
+if ($prntonly == array()) {
 	$activi = 'SIN ACTIVIDADES PENDIENTES DE SINCRIZACIÓN';
 	$table->data[] = array($activi);
 }else{
@@ -96,7 +96,7 @@ $table2->head = array('Actividades creadas solo en el curso hijo');
 
 $modinfo = get_fast_modinfo($courseid);
 
-if (empty($chlonly)) {
+if ($chlonly == array()) {
 	$activi = 'SIN ACTIVIDADES CREADAS';
 	$table2->data[] = array($activi);
 }else{
@@ -152,7 +152,7 @@ foreach ($course_modules as $key => $value) {
 	}
 
 	if ($class !== 'update') {
-		
+
 		continue;
 	}
 			
