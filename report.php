@@ -85,7 +85,7 @@ $parent = (count($parents)/$padres)*100;
 
   $out = '<select onchange="window.location=this.options[this.selectedIndex].value" onmousedown="if(  this.options.length>8){this.size=10;}" onblur="this.size=0;" class="select2">    
     <option value="">Selecione curso padre</option>
-    <option value="http://moodle.dev/blocks/sync/report.php">Todos los cursos</option>';
+    <option value="'.$main_url.'">Todos los cursos</option>';
 
  
 

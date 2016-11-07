@@ -38,6 +38,7 @@ $itemss = "SELECT sm.id, sm.module_id, cm.module, sm.main_id FROM {sync_modules}
 	WHERE sm.main_id IN (?)	
 	ORDER BY cm.module ASC, sm.module_id DESC ";
 $course_modules = $DB->get_records_sql($itemss, array($id));
+
 //==================FIN ordenar por modulos=======================
 
 //===============Tabla de Datos================
@@ -48,7 +49,13 @@ $curso = "SELECT suh.id, suh.main_id, suh.child_id FROM {sync_user_history} suh
 			WHERE suh.main_id in (?)
 			ORDER BY suh.main_id ASC, suh.time_sync DESC";
 $cursos = $DB->get_records_sql($curso,array($_GET['courseid']));
-array_pop($cursos);
+
+$synctimes = count($cursos);
+
+$temp = array_shift($cursos);
+$cursos = array();
+array_push($cursos, $temp);
+
 $ids = array();
 foreach ($cursos as $key => $value) {
 	$ids[$value->main_id] =  $value->main_id;
@@ -94,11 +101,19 @@ foreach ($ids as $key => $value) {
 }
 //==============FIN Tabla de Datos============
 
+//=============Numero de veces sincronizado=========== 
+
+	$table_synctimes = new html_table();
+	$table_synctimes->head = array('Numero de veces sincronizado');
+	$table_synctimes->data[] = 	array($synctimes);
+
+//=============FIN Numero de veces sincronizado===========
+
 
 $modinfo = get_fast_modinfo($tmp_course);
 
 $table_hijos = new html_table();
-$table_hijos->head = array('Hijos','Sincronizado','');
+$table_hijos->head = array('Hijos','Sincronizado','','Modulos del hijo');
 
 $l = array();
     $courses = array();
@@ -109,8 +124,12 @@ $l = array();
 
     	$percent = sync_check_course($id,$c->courseid);
 
-    	$table_hijos->data[] = array($tmp->fullname, generate_progressbar($percent['percent']), '');
-      $l[] = html_writer::tag('p',$tmp->fullname);
+    	$table_hijos->data[] = array($tmp->fullname, 
+    		generate_progressbar($percent['percent']), '',
+    		html_writer::link(new moodle_url('/blocks/sync/dashboardchild.php?parent=' . $_GET['courseid'] .'&main='. $_GET['id'] . '&courseid='. $c->courseid),'Ingresar',array('class'=>'btn btn-default' , 'target' => '_self')));
+      
+      $l[] = html_writer::tag('p',$tmp->fullname)
+      ;
     }
 
     $line = implode('', $l);
@@ -123,14 +142,10 @@ $table->head = array('Actividades','Hijos Sincornizados','Agregar', 'Actualizar'
 
 
 foreach ($course_modules as $key => $value) {
-//$cm = $modinfo->get_cm($value->id);
-	//$cm = get_coursemodule_from_id('mod_name', $value->main_id, 0, false, MUST_EXIST);
-	//$itemss = "SELECT * FROM {course_modules} cm WHERE cm.id =".$value->module_id." GROUP BY " ;
+
 
         $exist = $DB->get_record('course_modules',array('id'=>$value->module_id) );
-       /* echo "<pre>";
-        	print_r($itemm);
-        echo "</pre>";*/
+       
   if ($exist){
 	$class = '';
 	$cont_total = 0;
@@ -196,11 +211,11 @@ foreach ($course_modules as $key => $value) {
 }
 
 $table_users = new html_table();
-$table_users->head = array('Usuarios','Cursos Sincronizados','Fecha');
+$table_users->head = array('Usuarios','Cursos Sincronizados','Fecha', '# Sincronización');
 
 $user_logs = $DB->get_records('sync_user_history',  array('main_id' => $courseid));
 //$resultado = array_unique($user_logs);
-
+$cont = 0;
 foreach ($user_logs as $value) {
 	$courses = explode(',', $value->child_id);
 	$out_courses = '';
@@ -215,7 +230,7 @@ foreach ($user_logs as $value) {
 	
 	//gmdate("Y-m-d\TH:i:s\Z", $value->time_sync);
 
-
+	$cont++;
 	$user =  $DB->get_record('user',  array('id' => $value->user_id));
 	$userpicture = $OUTPUT->user_picture($user,array('size' => 70));
 	$userurl = new moodle_url('/user/view.php', array('id' => $user->id));
@@ -223,7 +238,7 @@ foreach ($user_logs as $value) {
 
 	$table_users->data[] = array(html_writer::link($userurl, $userpicture . ' ' . fullname($user)),
 								 $out_courses,
-								 gmdate("Y-m-d H:i:s", $value->time_sync));
+								 gmdate("Y-m-d H:i:s", $value->time_sync), $cont);
 }
 
 
@@ -252,6 +267,7 @@ print html_writer::tag('link','',array('href'=>$CFG->wwwroot.'/blocks/sync/asset
 	echo html_writer::table($table_datos);
 	echo html_writer::table($table_hijos);
 	echo html_writer::table($table);
+	//echo html_writer::table($table_synctimes);
 	echo html_writer::table($table_users);
 
 

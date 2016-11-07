@@ -254,6 +254,26 @@ function sync_main_modules($courseid = 0, $main_id){
   }
 }
 
+/*function sync_child_modules($courseid = 0, $related_id){
+  global $DB;
+
+  if($courseid == 0){
+    return FALSE;
+  }
+
+  $modules = $DB->get_records('course_modules',array("course"=> $courseid));
+  $already = $DB->get_records('sync_modules',array("main_id"=>$main_id),null,'module_id,main_id');
+  $k = 0;
+  foreach ($modules as $m) {
+    if($k != 0 || ($m->module != 9 && $k == 0)){ //Ignore News Forum
+      if(!in_array($m->id, array_keys($already))){
+        $DB->insert_record('sync_modules', array('main_id'=>$main_id, 'module_id'=>$m->id));
+      }
+    }
+    $k++;
+  }
+}*/
+
 function sync_check_status($module,$courseid){
   global $DB;
   $object  = false;
@@ -264,7 +284,7 @@ function sync_check_status($module,$courseid){
   if($entity){
     $instance = $DB->get_record($list[$entity->module],array('id'=>$entity->instance));
   }
-
+  
   if(!$exists){
     if($entity){
       $object = new stdClass();
