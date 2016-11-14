@@ -2,3 +2,18 @@
 	background-image: none !important; 
 	background-color: #86b1d6 !important;
 }
+
+a.username {
+    margin-left: 4%;
+}
+
+.panel-group {
+    margin-bottom: 0px !important;
+    width: 90%;
+    margin: 10px auto;
+}
+
+
+.user {
+    margin-top: 30px;
+}

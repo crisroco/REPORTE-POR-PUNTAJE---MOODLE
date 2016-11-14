@@ -42,3 +42,7 @@ $string['text'] = 'Prueba 11';
 $string['form_text'] = 'Aqui se guardan cursos padres';
 $string['form'] = 'Configuracion Plugin Padre Hijo';
 $string['edit'] = 'Edicion Configuracion Plugin Padre Hijo';
+$string['weeks'] = 'Semanal';
+$string['onetopic'] = 'Pestañas';
+$string['topics'] = 'topicos';
+$string['section'] = 'Sección';

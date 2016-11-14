@@ -1,10 +1,11 @@
 <?php
 
-global $DB, $PAGE, $OUTPUT;
+global $DB, $PAGE, $OUTPUT, $CFG;
 
 require_once("../../config.php");
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir.'/modinfolib.php');
+require_once($CFG->libdir.'/formslib.php');
 
 include('lib.php');
 
@@ -30,20 +31,9 @@ $act = array();
 
 $childs =  $DB->get_records('sync_related',array('main_id'=>$id));
 
-
-//===================ordenar por modulos=======================
-//$course_modules =  $DB->get_records('sync_modules',array('main_id'=>$id));
-$itemss = "SELECT sm.id, sm.module_id, cm.module, sm.main_id FROM {sync_modules} sm
-	INNER JOIN {course_modules} cm ON sm.module_id = cm.id
-	WHERE sm.main_id IN (?)	
-	ORDER BY cm.module ASC, sm.module_id DESC ";
-$course_modules = $DB->get_records_sql($itemss, array($id));
-
-//==================FIN ordenar por modulos=======================
-
 //===============Tabla de Datos================
 $table_datos = new html_table();
-$table_datos->head = array('Curso','Nombre','N de secciones','Formato', 'Coordinador');
+$table_datos->head = array('Curso','Nombre','N de secciones','Formato', 'Coordinador','Sincronizado');
 
 $curso = "SELECT suh.id, suh.main_id, suh.child_id FROM {sync_user_history} suh
 			WHERE suh.main_id in (?)
@@ -88,14 +78,17 @@ foreach ($ids as $key => $value) {
 
 	foreach ($datos as $key => $value) {
 		$value->coordinador = $coord;
-		
+		$percent = sync_check_course($id,$value->id);
+
 		if ($value->id == $_GET['courseid']) {
 			$crs = 'Padre';
+			$prgrs = '';
 		}else{
 			$crs = 'Hijo ' . $cont;
+			$prgrs = generate_progressbar($percent['percent']);
 		}
-
-		$table_datos->data[] = array($crs, $value->shortname, $value->sections,$value->formato, $value->coordinador);
+		
+		$table_datos->data[] = array($crs, $value->shortname, $value->sections,get_string($value->formato, 'block_sync'), $value->coordinador,$prgrs);
 		$cont++;
 	}
 }
@@ -111,16 +104,13 @@ foreach ($ids as $key => $value) {
 
 
 $modinfo = get_fast_modinfo($tmp_course);
-
+/*
 $table_hijos = new html_table();
 $table_hijos->head = array('Hijos','Sincronizado','','Modulos del hijo');
 
-$l = array();
-    $courses = array();
+//$l = array();
     foreach($childs as $c){
     	$tmp = get_course($c->courseid);
-    	
-    	$courses[] = $tmp;
 
     	$percent = sync_check_course($id,$c->courseid);
 
@@ -128,95 +118,235 @@ $l = array();
     		generate_progressbar($percent['percent']), '',
     		html_writer::link(new moodle_url('/blocks/sync/dashboardchild.php?parent=' . $_GET['courseid'] .'&main='. $_GET['id'] . '&courseid='. $c->courseid),'Ingresar',array('class'=>'btn btn-default' , 'target' => '_self')));
       
-      $l[] = html_writer::tag('p',$tmp->fullname)
-      ;
+      //$l[] = html_writer::tag('p',$tmp->fullname);
     }
 
-    $line = implode('', $l);
+    //$line = implode('', $l);
+*/
 
-$out_mods = '';
+$section ="SELECT cs.id, c.id as course, cs.section FROM {course_sections} cs
+			INNER JOIN {course} c ON c.id = cs.course
+			where c.id IN (?)";   
+$sections = $DB->get_records_sql($section, array($_GET['courseid']));
+$secciones = array();
+$secont = 0;
+foreach ($sections as $llave => $valor) {
+	
+	
+	//===================ordenar por modulos=======================
+	//$course_modules =  $DB->get_records('sync_modules',array('main_id'=>$id));
+	$itemss = "SELECT sm.id, sm.module_id, cm.module, sm.main_id, cs.section FROM {sync_modules} sm
+		INNER JOIN {course_modules} cm ON sm.module_id = cm.id
+	    INNER JOIN {course_sections} cs ON cs.id = cm.section
+		WHERE sm.main_id IN (?) and cs.section IN (?)
+		ORDER BY cs.section ASC, cm.module ASC ";
+	$course_modules = $DB->get_records_sql($itemss, array($id,$valor->section));
 
-$table = new html_table();
-$table->head = array('Actividades','Hijos Sincornizados','Agregar', 'Actualizar' , 'Eliminar');
-
-
-
-foreach ($course_modules as $key => $value) {
-
-
-        $exist = $DB->get_record('course_modules',array('id'=>$value->module_id) );
-       
-  if ($exist){
-	$class = '';
-	$cont_total = 0;
-	$creates = 0;
-	$updates = 0;
-	$deletes = 0;
-	foreach($childs as $c) { 
-		$status = sync_check_status($value,$c->courseid);
-
-		if(is_object($status)){
-			switch ((int)$status->type) {
-				case 1:
-					//Crear
-					$creates++;
-					$class = 'create';
-				break;
-				case 2:
-					//Actualizar
-					$updates++;
-					$class = 'update';
-				break;
-				case 3:
-					//Borrar
-				echo "<pre>";
-				print_r($status);
-				echo "</pre>";
-					$deletes++;
-					$tmpp = sync_check_deletes($value,$c->courseid);
-					$modinfo = get_fast_modinfo($tmpp->course);
-					$value->module_id = $tmpp->id;
-					$class = 'delete';
-				break;
-			}
-			//$cont_unit++;
-		}
-
-		$cont_total++;
+	if ($course_modules == array()) {
+		continue;
 	}
 
-	//echo $value->module_id;
-	$cm = $modinfo->get_cm($value->module_id);
-	$modinfo = get_fast_modinfo($tmp_course);	
+	//==================FIN ordenar por modulos=======================
+
+	$table = new html_table();
+	$table->head = array('Actividades','Hijos Sincornizados');
+	
+
+	foreach ($course_modules as $key => $value) {
 
 
-	$tm = new stdClass();
-	$tm->id = $cm->id;
-	$tm->modname = $cm->modname;
-	$tm->name = $cm->name;
-	$tm->instance = $cm->instance;
-	$tm->module_id = $cm->id;
-	$tm->main_id = $id;
+	        $exist = $DB->get_record('course_modules',array('id'=>$value->module_id) );
+	       
+	 	if ($exist){
+			$class = '';
+			$cont_total = 0;
+			$creates = 0;
+			$updates = 0;
+			$deletes = 0;
+			foreach($childs as $c) { 
+				$status = sync_check_status($value,$c->courseid);
 
-	$act[] = $tm;
+				if(is_object($status)){
+					switch ((int)$status->type) {
+						case 1:
+							//Crear
+							$creates++;
+							$class = 'create';
+						break;
+						case 2:
+							//Actualizar
+							$updates++;
+							$class = 'update';
+						break;
+						case 3:
+							//Borrar
+						echo "<pre>";
+						print_r($status);
+						echo "</pre>";
+							$deletes++;
+							$tmpp = sync_check_deletes($value,$c->courseid);
+							$modinfo = get_fast_modinfo($tmpp->course);
+							$value->module_id = $tmpp->id;
+							$class = 'delete';
+						break;
+					}
+					//$cont_unit++;
+				}
 
-	$activi = html_writer::tag('p', html_writer::empty_tag('img', array('src' => $cm->get_icon_url(),
-                'class' => 'iconlarge activityicon', 'alt' => ' ', 'role' => 'presentation')) .' ' . $cm->name, array('class' => $class)) ;
-	//$table->data[] = array($activi, $cont_total, $creates,$updates,$deletes);
-	$table->data[] = array($activi, generate_progressbar(calc_percent(
-									$creates + $updates + $deletes, $cont_total)), $creates,$updates,$deletes);
+				$cont_total++;
+			}
 
-	//$out_mods .= html_writer::tag('p', . $cm->name  . ' ' . $cont_unit . '/' . $cont_total, array('class' => $class));
-  }
+			//echo $value->module_id;
+			$cm = $modinfo->get_cm($value->module_id);
+			$modinfo = get_fast_modinfo($tmp_course);	
+
+
+			$tm = new stdClass();
+			$tm->id = $cm->id;
+			$tm->modname = $cm->modname;
+			$tm->name = $cm->name;
+			$tm->instance = $cm->instance;
+			$tm->module_id = $cm->id;
+			$tm->main_id = $id;
+
+			$act[] = $tm;
+
+
+
+			$activi = html_writer::tag('p', html_writer::empty_tag('img', array('src' => $cm->get_icon_url(),
+		                'class' => 'iconlarge activityicon', 'alt' => ' ', 'role' => 'presentation')) .' ' . $cm->name, array('class' => $class)) ;
+			$table->data[] = array($activi, generate_progressbar(calc_percent(
+											$creates + $updates + $deletes, $cont_total)));
+	  	}
+	 
+	}
+	 	$outs = html_writer::start_tag('div', array('class' => 'panel-group'));
+		$outs .= html_writer::start_tag('div', array('class' => 'panel panel-default'));
+			$outs .= html_writer::start_tag('div', array('class' => 'panel-heading'));
+				$outs .= html_writer::start_tag('h4', array('class' => 'panel-title'));
+					$outs .= html_writer::start_tag('div', array('data-toggle' => 'collapse', 'href' => '#section'.$secont));		
+						//$out .= html_writer::link($userurl, $userpicture);
+						$outs .= html_writer::start_tag('a', array('class' => 'username'));
+							$outs .=  get_string('section', 'block_sync').' '.$valor->section;
+						$outs .= html_writer::end_tag('a');	
+						
+					$outs .= html_writer::end_tag('div');
+				$outs .= html_writer::end_tag('h4');
+			$outs .= html_writer::end_tag('div');
+			//$out = html_writer::start_tag('div', array('id' => 'collapse1', 'class' => 'panel-collapse collapse'));
+			$outs .= '<div id="section'.$secont.'" class="panel-collapse collapse">
+
+			      		<div class="panel-body">';
+
+
+						$outs .= html_writer::table($table);
+					$outs .= html_writer::end_tag('div');
+				$outs .= html_writer::end_tag('div');
+			$outs .= html_writer::end_tag('div');
+		$outs .= html_writer::end_tag('div');
+		array_push($secciones, $outs);
+		$secont++;
 }
 
-$table_users = new html_table();
-$table_users->head = array('Usuarios','Cursos Sincronizados','Fecha', '# Sincronización');
+//usuarios que ralizaron sincronización
+$syncuser = "SELECT suh.user_id FROM {sync_user_history} suh WHERE suh.main_id IN (?) group by suh.user_id";
+$syncusers = $DB->get_records_sql($syncuser,array($courseid));
+$userdata = array();
 
-$user_logs = $DB->get_records('sync_user_history',  array('main_id' => $courseid));
-//$resultado = array_unique($user_logs);
+foreach ($syncusers as $key => $value) {
 $cont = 0;
-foreach ($user_logs as $value) {
+$table_users = new html_table();
+$table_users->head = array('Cursos Sincronizados','Fecha', '# Sincronización');
+
+	$user_logs = $DB->get_records('sync_user_history',  array('main_id' => $courseid, 'user_id' => $value->user_id));	
+	$usuario = $DB->get_record('user',  array('id' => $value->user_id));
+	$userpicture = $OUTPUT->user_picture($usuario,array('size' => 50));
+	$userurl = new moodle_url('/user/view.php', array('id' => $usuario->id));
+
+	foreach ($user_logs as $values) {
+		$cont++;
+		$courses = explode(',', $values->child_id);
+		$out_courses = '';
+		if(count($courses) >= 2){
+			foreach ($courses as $val) {
+				if($val != ''){
+					$course = get_course($val);
+					$out_courses .= html_writer::tag('p', '- ' . $course->fullname);
+				}
+			}
+		}
+		$table_users->data[] = array($out_courses,
+								 gmdate("Y-m-d H:i:s", $values->time_sync), $cont);		
+	}
+
+
+	$out = html_writer::start_tag('div', array('class' => 'panel-group'));
+		$out .= html_writer::start_tag('div', array('class' => 'panel panel-default'));
+			$out .= html_writer::start_tag('div', array('class' => 'panel-heading'));
+				$out .= html_writer::start_tag('h4', array('class' => 'panel-title'));
+					$out .= html_writer::start_tag('div', array('data-toggle' => 'collapse', 'href' => '#collapse'.$value->user_id));		
+						$out .= html_writer::link($userurl, $userpicture);
+						$out .= html_writer::start_tag('a', array('class' => 'username'));
+							$out .=  fullname($usuario);
+						$out .= html_writer::end_tag('a');	
+						
+					$out .= html_writer::end_tag('div');
+				$out .= html_writer::end_tag('h4');
+			$out .= html_writer::end_tag('div');
+			//$out = html_writer::start_tag('div', array('id' => 'collapse1', 'class' => 'panel-collapse collapse'));
+			$out .= '<div id="collapse'.$value->user_id.'" class="panel-collapse collapse">
+
+			      		<div class="panel-body">';
+
+
+						$out .= html_writer::table($table_users);
+					$out .= html_writer::end_tag('div');
+				$out .= html_writer::end_tag('div');
+			$out .= html_writer::end_tag('div');
+		$out .= html_writer::end_tag('div');
+
+		array_push($userdata, $out);
+}
+
+		
+// FIN usuarios que ralizaron sincronización
+
+
+
+//obtener miduloss!!!!!
+
+$PAGE->set_url($main_url);
+$title = 'Dashboard - ' .  $tmp_course->fullname;
+//$title = 'Dashboard - ';
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
+print $OUTPUT->header();
+print html_writer::tag('link','',array('href'=>$CFG->wwwroot.'/blocks/sync/assets/css/styles.css','rel'=>'stylesheet'));
+
+ 	
+	echo html_writer::table($table_datos);
+		//echo html_writer::table($table_hijos);
+		//echo html_writer::table($table);	
+	echo  html_writer::start_tag('div', array('class' => 'sectn'));
+		echo html_writer::tag('p','Secciones Curso padre');
+		foreach ($secciones as $key => $value) {
+			echo $value;
+		}
+	echo html_writer::end_tag('div');	
+	echo  html_writer::start_tag('div', array('class' => 'user'));
+		echo html_writer::tag('p','Usuarios ');
+		foreach ($userdata as $key => $value) {
+			echo $value;
+		}
+		//echo html_writer::table($table_users);
+		//echo $out;
+	echo html_writer::end_tag('div');	
+
+print $OUTPUT->footer();
+
+
+
+/*foreach ($user_logs as $value) {
 	$courses = explode(',', $value->child_id);
 	$out_courses = '';
 	if(count($courses) >= 2){
@@ -239,40 +369,43 @@ foreach ($user_logs as $value) {
 	$table_users->data[] = array(html_writer::link($userurl, $userpicture . ' ' . fullname($user)),
 								 $out_courses,
 								 gmdate("Y-m-d H:i:s", $value->time_sync), $cont);
-}
+}*/
+
+/*echo '<div class="panel-group">
+		  <div class="panel panel-default">
+		    <div class="panel-heading">
+		      <h4 class="panel-title">
+		        <div data-toggle="collapse" href="#collapse1">
+		        	<a class="username">Collapsible panel</a>
+		        </div>
+		      </h4>
+		    </div>
+		    <div id="collapse1" class="panel-collapse collapse">
+		      <div class="panel-body">Panel Body</div>
+		      <div class="panel-footer">Panel Footer</div>
+		    </div>
+		  </div>
+	 </div>';*/
+
+	 /*
+SELECT sm.id, sm.module_id, cm.module, sm.main_id, cs.section FROM `mdl_sync_modules` sm
+	INNER JOIN `mdl_course_modules` cm ON sm.module_id = cm.id
+    INNER JOIN `mdl_course_sections` cs ON cs.is = cm.section
+	WHERE sm.main_id = 1
+	ORDER BY cm.module ASC, sm.module_id DESC
 
 
 
+	SELECT sm.id, sm.module_id, cm.module, sm.main_id, cs.section FROM {sync_modules} sm
+	INNER JOIN {course_modules} cm ON sm.module_id = cm.id
+    INNER JOIN {course_sections} cs ON cs.id = cm.section
+	WHERE sm.main_id = 1
+	ORDER BY cs.section ASC, cm.module ASC
+
+	SELECT c.id, cs.section FROM {course_sections} cs
+INNER JOIN {mdl_course} c ON c.id = cs.course
+where c.id = 15
 
 
-/*$cm = $modinfo->get_cm(14);
-echo "<pre>";
-	print_r($cm);
-	echo "</pre>";*/
-
-
-
-//obtener miduloss!!!!!
-
-$PAGE->set_url($main_url);
-$title = 'Dashboard - ' .  $tmp_course->fullname;
-//$title = 'Dashboard - ';
-$PAGE->set_title($title);
-$PAGE->set_heading($title);
-print $OUTPUT->header();
-print html_writer::tag('link','',array('href'=>$CFG->wwwroot.'/blocks/sync/assets/css/styles.css','rel'=>'stylesheet'));
-
-    //echo $line;
-
-	echo html_writer::table($table_datos);
-	echo html_writer::table($table_hijos);
-	echo html_writer::table($table);
-	//echo html_writer::table($table_synctimes);
-	echo html_writer::table($table_users);
-
-
-
-
-
-
-print $OUTPUT->footer();
+SELECT sm.id, sm.module_id, cm.module, sm.main_id, cs.section FROM `mdl_sync_modules` sm INNER JOIN `mdl_course_modules` cm ON sm.module_id = cm.id INNER JOIN `mdl_course_sections` cs ON cs.id = cm.section WHERE sm.main_id = 1 ORDER BY cs.section ASC, cm.module ASC
+	 */
