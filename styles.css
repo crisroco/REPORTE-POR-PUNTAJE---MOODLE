@@ -1,6 +1,6 @@
 #pb {
-	background-image: none !important; 
-	background-color: #86b1d6 !important;
+   background-image: none !important; 
+   background-color: #86b1d6 !important;
 }
 
 a.username {
@@ -16,4 +16,8 @@ a.username {
 
 .user {
     margin-top: 30px;
+}
+
+.panel-collapse{
+       display: none;
 }
