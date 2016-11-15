@@ -180,9 +180,7 @@ foreach ($sections as $llave => $valor) {
                   break;
                   case 3:
                      //Borrar
-                  echo "<pre>";
-                  print_r($status);
-                  echo "</pre>";
+                  //echo "<pre>";print_r($status);echo "</pre>";
                      $deletes++;
                      $tmpp = sync_check_deletes($value,$c->courseid);
                      $modinfo = get_fast_modinfo($tmpp->course);
@@ -311,9 +309,33 @@ $table_users->head = array('Cursos Sincronizados','Fecha', '# Sincronización');
       
 // FIN usuarios que ralizaron sincronización
 
+//leyenda
 
 
-//obtener miduloss!!!!!
+$lgd = html_writer::start_tag('div', array('class' => 'legend'));
+	$lgd .= html_writer::start_tag('ul');
+		$lgd .= html_writer::start_tag('li', array('class' => 'finished'));
+			 $lgd .= html_writer::tag('span', '',array('class'=> 'color' ));
+			 $lgd .= html_writer::tag('span', 'Sincronizado');
+		$lgd .= html_writer::end_tag('li');
+		$lgd .= html_writer::start_tag('li', array('class' => 'in-progress'));
+			 $lgd .= html_writer::tag('span', '',array('class'=> 'color' ));
+			 $lgd .= html_writer::tag('span', 'Sin sincronizar');
+		$lgd .= html_writer::end_tag('li');
+		$lgd .= html_writer::start_tag('li', array('class' => 'update'));
+			 $lgd .= html_writer::tag('span', '',array('class'=> 'color' ));
+			 $lgd .= html_writer::tag('span', 'Actualizado');
+		$lgd .= html_writer::end_tag('li');
+		$lgd .= html_writer::start_tag('li', array('class' => 'deleted'));
+			 $lgd .= html_writer::tag('span', '',array('class'=> 'color' ));
+			 $lgd .= html_writer::tag('span', 'Eliminado');
+		$lgd .= html_writer::end_tag('li');
+	$lgd .= html_writer::end_tag('ul');
+$lgd .= html_writer::end_tag('div');
+ 
+//FIN leyenda
+
+//IMPRIMIR PAGINA
 
 $PAGE->set_url($main_url);
 $title = 'Dashboard - ' .  $tmp_course->fullname;
@@ -334,6 +356,7 @@ print html_writer::tag('link','',array('href'=>$CFG->wwwroot.'/blocks/sync/asset
       //echo html_writer::table($table);  
    echo  html_writer::start_tag('div', array('class' => 'sectn'));
       echo html_writer::tag('p','Secciones Curso padre');
+      echo $lgd;
       foreach ($secciones as $key => $value) {
          echo $value;
       }
@@ -345,7 +368,9 @@ print html_writer::tag('link','',array('href'=>$CFG->wwwroot.'/blocks/sync/asset
       }
       //echo html_writer::table($table_users);
       //echo $out;
-   echo html_writer::end_tag('div');   
+   echo html_writer::end_tag('div');  
+
+  
 
 
 print $OUTPUT->footer();

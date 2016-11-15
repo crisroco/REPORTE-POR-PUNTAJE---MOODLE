@@ -17,7 +17,77 @@ a.username {
 .user {
     margin-top: 30px;
 }
-
+/*estilo colapse*/
 .panel-collapse{
        display: none;
 }
+
+/*estilos leyenda*/
+
+.legend {
+    margin-bottom: 60px;
+    margin-right: 5.3%;
+}
+
+.legend ul {
+    float: right;
+    padding: 0;
+    margin: 0;
+}
+
+.legend ul li span {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 2rem;
+}
+
+.legend ul li {
+    list-style: none;
+    padding-left: 2rem;
+    font-size: 1.6rem;
+    line-height: 2rem;
+    display: inline-block;
+}
+
+.legend ul li .color {
+    border-radius: 50%;
+    margin-right: 2px;
+    width: 11px;
+    height: 11px;
+}
+
+ .legend ul li.finished {
+    color: #333333;
+}
+ 
+
+ .legend ul li.finished .color {
+    background: #333333;
+} 
+ 
+
+ .legend ul li.in-progress {
+    color: #12bd12;
+}
+
+.legend ul li.in-progress .color {
+    background: #12bd12;
+}
+
+ .legend ul li.update {
+    color: #3566c7;
+}
+
+.legend ul li.update .color {
+    background: #3566c7;
+} 
+
+.legend ul li.deleted {
+    color: #e20000;
+}
+
+.legend ul li.deleted .color {
+    background: #e20000;
+}
+
+ 
