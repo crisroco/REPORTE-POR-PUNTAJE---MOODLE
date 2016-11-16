@@ -5,12 +5,17 @@
 
 a.username {
     margin-left: 4%;
+    cursor: pointer;
 }
 
 .panel-group {
     margin-bottom: 0px !important;
     width: 90%;
     margin: 10px auto;
+}
+
+.sctn{
+    margin: 0px auto;
 }
 
 
@@ -91,3 +96,6 @@ a.username {
 }
 
  
+.panel-body.datos {
+    padding: 0px !important;
+}

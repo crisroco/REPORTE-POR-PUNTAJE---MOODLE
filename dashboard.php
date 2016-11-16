@@ -31,76 +31,6 @@ $act = array();
 
 $childs =  $DB->get_records('sync_related',array('main_id'=>$id));
 
-//===============Tabla de Datos================
-$table_datos = new html_table();
-$table_datos->head = array('Curso','Nombre','N de secciones','Formato', 'Coordinador','Sincronizado');
-
-$curso = "SELECT suh.id, suh.main_id, suh.child_id FROM {sync_user_history} suh
-         WHERE suh.main_id in (?)
-         ORDER BY suh.main_id ASC, suh.time_sync DESC";
-$cursos = $DB->get_records_sql($curso,array($_GET['courseid']));
-
-$synctimes = count($cursos);
-
-$temp = array_shift($cursos);
-$cursos = array();
-array_push($cursos, $temp);
-
-$ids = array();
-foreach ($cursos as $key => $value) {
-   $ids[$value->main_id] =  $value->main_id;
-   $child = explode(',', $value->child_id);
-   array_pop($child);
-   foreach ($child as $value) {
-      $ids[$value] =  $value;
-   }
-}
-$cont = 0;
-foreach ($ids as $key => $value) {
-   $coord = '';
-   $coordinador = "SELECT CONCAT(u.firstname,' ', u.lastname) as coordinador FROM {course} c
-               INNER JOIN {context} ctx ON ctx.instanceid = c.id
-               INNER JOIN {role_assignments} ra ON ctx.id = ra.contextid
-               INNER JOIN {role} r ON r.id = ra.roleid
-               INNER JOIN {user} u ON u.id = ra.userid
-               WHERE r.id = 3 and c.id IN (?)";
-   $coordinadores = $DB->get_records_sql($coordinador, array($value));           
-   foreach ($coordinadores as $ke => $valu) {
-      $coord = $valu->coordinador;     
-   }
-   $dato = "SELECT c.id, c.shortname,  COUNT(cs.section) as sections, c.format as formato
-        FROM {course} c 
-        INNER JOIN {course_sections} cs ON c.id = cs.course
-        where c.id IN (?) 
-        GROUP BY c.shortname";
-
-   $datos = $DB->get_records_sql($dato, array($value));
-
-   foreach ($datos as $key => $value) {
-      $value->coordinador = $coord;
-      $percent = sync_check_course($id,$value->id);
-
-      if ($value->id == $_GET['courseid']) {
-         $crs = 'Padre';
-         $prgrs = '';
-      }else{
-         $crs = 'Hijo ' . $cont;
-         $prgrs = generate_progressbar($percent['percent']);
-      }
-      
-      $table_datos->data[] = array($crs, $value->shortname, $value->sections,get_string($value->formato, 'block_sync'), $value->coordinador,$prgrs);
-      $cont++;
-   }
-}
-//==============FIN Tabla de Datos============
-
-//=============Numero de veces sincronizado=========== 
-
-   $table_synctimes = new html_table();
-   $table_synctimes->head = array('Numero de veces sincronizado');
-   $table_synctimes->data[] =    array($synctimes);
-
-//=============FIN Numero de veces sincronizado===========
 
 
 $modinfo = get_fast_modinfo($tmp_course);
@@ -218,7 +148,7 @@ foreach ($sections as $llave => $valor) {
       }
     
    }
-      $outs = html_writer::start_tag('div', array('class' => 'panel-group'));
+      $outs = html_writer::start_tag('div', array('class' => 'panel-group sctn'));
       $outs .= html_writer::start_tag('div', array('class' => 'panel panel-default'));
          $outs .= html_writer::start_tag('div', array('class' => 'panel-heading'));
             $outs .= html_writer::start_tag('h4', array('class' => 'panel-title'));
@@ -245,6 +175,91 @@ foreach ($sections as $llave => $valor) {
       array_push($secciones, $outs);
       $secont++;
 }
+
+//===============Tabla de Datos================
+
+
+$curso = "SELECT suh.id, suh.main_id, suh.child_id FROM {sync_user_history} suh
+         WHERE suh.main_id in (?)
+         ORDER BY suh.main_id ASC, suh.time_sync DESC";
+$cursos = $DB->get_records_sql($curso,array($_GET['courseid']));
+
+$synctimes = count($cursos);
+
+$temp = array_shift($cursos);
+$cursos = array();
+array_push($cursos, $temp);
+
+$ids = array();
+foreach ($cursos as $key => $value) {
+   $ids[$value->main_id] =  $value->main_id;
+   $child = explode(',', $value->child_id);
+   array_pop($child);
+   foreach ($child as $value) {
+      $ids[$value] =  $value;
+   }
+}
+$cont = 0;
+$crss = array();
+foreach ($ids as $key => $value) {
+   $coord = '';
+   $coordinador = "SELECT CONCAT(u.firstname,' ', u.lastname) as coordinador FROM {course} c
+               INNER JOIN {context} ctx ON ctx.instanceid = c.id
+               INNER JOIN {role_assignments} ra ON ctx.id = ra.contextid
+               INNER JOIN {role} r ON r.id = ra.roleid
+               INNER JOIN {user} u ON u.id = ra.userid
+               WHERE r.id = 3 and c.id IN (?)";
+   $coordinadores = $DB->get_records_sql($coordinador, array($value));           
+   foreach ($coordinadores as $ke => $valu) {
+      $coord = $valu->coordinador;     
+   }
+   $dato = "SELECT c.id, c.shortname,  COUNT(cs.section) as sections, c.format as formato
+        FROM {course} c 
+        INNER JOIN {course_sections} cs ON c.id = cs.course
+        where c.id IN (?) 
+        GROUP BY c.shortname";
+
+   $datos = $DB->get_records_sql($dato, array($value));
+
+   foreach ($datos as $key => $value) {
+      $value->coordinador = $coord;
+      $percent = sync_check_course($id,$value->id);
+
+      if ($value->id == $_GET['courseid']) {
+         $crs = 'Padre';
+         $prgrs = '';
+      }else{
+         $crs = 'Hijo ' . $cont;
+         $prgrs = generate_progressbar($percent['percent']);
+      }
+      $table_datos = new html_table();
+      $table_datos->head = array('Nombre','N de secciones','Formato', 'Coordinador','Sincronizado');
+      $table_datos->data[] = array( $value->shortname, $value->sections,get_string($value->formato, 'block_sync'), $value->coordinador,$prgrs);
+
+      $dts = html_writer::start_tag('div', array('class' => 'panel-group'));
+      $dts .= html_writer::start_tag('div', array('class' => 'panel panel-default'));
+         $dts .= html_writer::start_tag('div', array('class' => 'panel-heading'));
+            $dts .= html_writer::start_tag('h4', array('class' => 'panel-title'));
+               $dts .= html_writer::start_tag('div', array('class' => 'collapsable', 'target' => '#course'.$value->id));
+                  $dts .= html_writer::start_tag('a', array('class' => 'username'));
+                     $dts .=  'Curso '.$crs. ' - '.$value->shortname;
+                  $dts .= html_writer::end_tag('a');                   
+               $dts .= html_writer::end_tag('div');
+            $dts .= html_writer::end_tag('h4');
+         $dts .= html_writer::end_tag('div');
+         $dts .= '<div id="course'.$value->id.'" class="panel-collapse">
+                     <div class="panel-body datos">';
+                  $dts .= html_writer::table($table_datos);
+               $dts .= html_writer::end_tag('div');
+            $dts .= html_writer::end_tag('div');
+         $dts .= html_writer::end_tag('div');
+      $dts .= html_writer::end_tag('div'); 
+      array_push($crss, $dts);     
+   
+      $cont++;
+   }
+}
+//==============FIN Tabla de Datos============
 
 //usuarios que ralizaron sincronización
 $syncuser = "SELECT suh.user_id FROM {sync_user_history} suh WHERE suh.main_id IN (?) group by suh.user_id";
@@ -325,11 +340,11 @@ $lgd = html_writer::start_tag('div', array('class' => 'legend'));
 		$lgd .= html_writer::start_tag('li', array('class' => 'update'));
 			 $lgd .= html_writer::tag('span', '',array('class'=> 'color' ));
 			 $lgd .= html_writer::tag('span', 'Actualizado');
-		$lgd .= html_writer::end_tag('li');
+		/*$lgd .= html_writer::end_tag('li');
 		$lgd .= html_writer::start_tag('li', array('class' => 'deleted'));
 			 $lgd .= html_writer::tag('span', '',array('class'=> 'color' ));
 			 $lgd .= html_writer::tag('span', 'Eliminado');
-		$lgd .= html_writer::end_tag('li');
+		$lgd .= html_writer::end_tag('li');*/
 	$lgd .= html_writer::end_tag('ul');
 $lgd .= html_writer::end_tag('div');
  
@@ -347,30 +362,31 @@ print html_writer::tag('link','',array('href'=>$CFG->wwwroot.'/blocks/sync/asset
 
    echo '<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script> ';
 	echo '<script type="text/javascript" src="format.js"></script>';
-      //BORARRRRR#############   
-   echo '<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>';
-   echo '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">';
-   //FIN BORARRRRR#############
-   echo html_writer::table($table_datos);
+   
+   echo  html_writer::start_tag('div', array('class' => 'cursos'));
+      echo html_writer::tag('h3','Cursos'); 
+       foreach ($crss as $key => $value) {
+         echo $value;
+       }
+   echo html_writer::end_tag('div'); 
+   //echo html_writer::table($table_datos);
       //echo html_writer::table($table_hijos);
       //echo html_writer::table($table);  
    echo  html_writer::start_tag('div', array('class' => 'sectn'));
-      echo html_writer::tag('p','Secciones Curso padre');
-      echo $lgd;
-      foreach ($secciones as $key => $value) {
-         echo $value;
-      }
+      echo html_writer::tag('h3','Secciones Curso padre');
+        echo $lgd;
+        foreach ($secciones as $key => $value) {
+           echo $value;
+        }
    echo html_writer::end_tag('div');   
    echo  html_writer::start_tag('div', array('class' => 'user'));
-      echo html_writer::tag('p','Usuarios ');
+      echo html_writer::tag('h3','Usuarios ');
       foreach ($userdata as $key => $value) {
          echo $value;
       }
       //echo html_writer::table($table_users);
       //echo $out;
-   echo html_writer::end_tag('div');  
-
-  
+   echo html_writer::end_tag('div');    
 
 
 print $OUTPUT->footer();
