@@ -20,27 +20,26 @@ $sync = $DB->get_record('sync_related',array('courseid'=>$courseid));
 
 
 //CONSULTAS
-$moduleP = $DB->get_records('course_modules',array("course"=> $parent));
-$modulC = $DB->get_records('course_modules',array("course"=> $courseid));
-$modulesP = $DB->get_records('sync_modules',array("main_id"=> $sync->main_id));
-$modulesC = $DB->get_records('sync_modules_course',array("course_id"=>$sync->courseid),null,'module_id');
-$childs =  $DB->get_records('sync_related',array('main_id'=>$main));
-
-
+//$moduleP = $DB->get_records('course_modules',array("course"=> $parent));
+//$modulesP = $DB->get_records('sync_modules',array("main_id"=> $sync->main_id));
+/*
 $moduleC = "SELECT sm.id as IDparent, smc.course_id as child, sm.module_id as modParent,  smc.module_id as modChild  FROM
          {sync_modules_course} smc 
          INNER JOIN  {sync_modules} sm ON sm.id = smc.smodule_id
          where smc.course_id IN (?)";
-
-$syncchild = $DB->get_records_sql($moduleC,array($courseid));
-
-$itemss = "SELECT sm.id, sm.module_id, cm.module, sm.main_id FROM {sync_modules} sm
+*/
+//$syncchild = $DB->get_records_sql($moduleC,array($courseid));
+$modulC = $DB->get_records('course_modules',array("course"=> $courseid));
+$modulesC = $DB->get_records('sync_modules_course',array("course_id"=>$sync->courseid),null,'module_id');
+$childs =  $DB->get_records('sync_related',array('main_id'=>$main));
+$itemss = "SELECT sm.id, sm.module_id, cm.module, sm.main_id, m.name FROM {sync_modules} sm
 	INNER JOIN {course_modules} cm ON sm.module_id = cm.id
+   INNER JOIN {modules} m ON m.id = cm.module
 	WHERE sm.main_id IN (?)	
 	ORDER BY cm.module ASC, sm.module_id DESC ";
 $course_modules = $DB->get_records_sql($itemss, array($main));
 
-//imprimir solo en el padre
+/*//imprimir solo en el padre
 $prntonly = array();
 $prntdeleted = array();
 
@@ -80,7 +79,7 @@ if ($prntonly == array()) {
 	   $table->data[] = array($activi); 
 	}
 }
-//FIN imprimir solo en el padre
+//FIN imprimir solo en el padre*/
 
 //imprimir solo en el hijo
 
@@ -117,8 +116,13 @@ if ($chlonly == array()) {
 //cursos actualizados en padre
 $tmp_course = get_course($parent);
 $modinfo = get_fast_modinfo($parent);
+$table = new html_table();
+$table->head = array('Actividades sin sincronizar');
 $table3 = new html_table();
 $table3->head = array('Actividades actualizadas en el padre sin sincronizar');
+echo "<pre>";
+print_r($course_modules);
+echo "</pre>";
 foreach ($course_modules as $key => $value) {
 
         $exist = $DB->get_record('course_modules',array('id'=>$value->module_id) );
@@ -151,32 +155,51 @@ foreach ($course_modules as $key => $value) {
 		
 	}
 
-	if ($class !== 'update') {
+	if ($class == 'update') {
+      //echo $value->module_id .'<br>';
+      $cm = $modinfo->get_cm($value->module_id);
+      $modinfo = get_fast_modinfo($tmp_course); 
 
-		continue;
-	}
-			
-	//echo $value->module_id .'<br>';
-	$cm = $modinfo->get_cm($value->module_id);
-	$modinfo = get_fast_modinfo($tmp_course);	
-
-	$cm = $modinfo->get_cm($value->module_id);
-	$modinfo = get_fast_modinfo($tmp_course);	
+      $cm = $modinfo->get_cm($value->module_id);
+      $modinfo = get_fast_modinfo($tmp_course); 
 
 
-	$tm = new stdClass();
-	$tm->id = $cm->id;
-	$tm->modname = $cm->modname;
-	$tm->name = $cm->name;
-	$tm->instance = $cm->instance;
-	$tm->module_id = $cm->id;
-	$tm->main_id = $main;
+      $tm = new stdClass();
+      $tm->id = $cm->id;
+      $tm->modname = $cm->modname;
+      $tm->name = $cm->name;
+      $tm->instance = $cm->instance;
+      $tm->module_id = $cm->id;
+      $tm->main_id = $main;
 
-	$act[] = $tm;
+      $act[] = $tm;
 
-	$activi = html_writer::tag('p', html_writer::empty_tag('img', array('src' => $cm->get_icon_url(),
-                'class' => 'iconlarge activityicon', 'alt' => ' ', 'role' => 'presentation')) .' ' . $cm->name, array('class' => $class)) ;
-	$table3->data[] = array($activi);
+      $activi = html_writer::tag('p', html_writer::empty_tag('img', array('src' => $cm->get_icon_url(),
+                   'class' => 'iconlarge activityicon', 'alt' => ' ', 'role' => 'presentation')) .' ' . $cm->name, array('class' => $class)) ;
+      $table3->data[] = array($activi);
+	}elseif ($class == 'create') {
+      $cm = $modinfo->get_cm($value->module_id);
+      $modinfo = get_fast_modinfo($tmp_course); 
+
+      $cm = $modinfo->get_cm($value->module_id);
+      $modinfo = get_fast_modinfo($tmp_course); 
+
+
+      $tm = new stdClass();
+      $tm->id = $cm->id;
+      $tm->modname = $cm->modname;
+      $tm->name = $cm->name;
+      $tm->instance = $cm->instance;
+      $tm->module_id = $cm->id;
+      $tm->main_id = $main;
+
+      $act[] = $tm;
+
+      $activi = html_writer::tag('p', html_writer::empty_tag('img', array('src' => $cm->get_icon_url(),
+                   'class' => 'iconlarge activityicon', 'alt' => ' ', 'role' => 'presentation')) .' ' . $cm->name, array('class' => $class)) ;
+      $table->data[] = array($activi);
+   }	
+	
 
   }
 }

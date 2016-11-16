@@ -24,7 +24,7 @@ $main_url = new moodle_url('/blocks/sync/dashboard.php',array('id'=>$id));
 
 $tmp_course = get_course($courseid);
 // obtener modulos!!!
-$modules = $DB->get_records('course_modules',array("course"=> $courseid));
+//$modules = $DB->get_records('course_modules',array("course"=> $courseid));
 
 $k = 0;
 $act = array();
@@ -346,8 +346,8 @@ print $OUTPUT->header();
 print html_writer::tag('link','',array('href'=>$CFG->wwwroot.'/blocks/sync/assets/css/styles.css','rel'=>'stylesheet'));
 
    echo '<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script> ';
-   //BORARRRRR#############
-   echo '<script type="text/javascript" src="format.js"></script>';
+	echo '<script type="text/javascript" src="format.js"></script>';
+      //BORARRRRR#############   
    echo '<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>';
    echo '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">';
    //FIN BORARRRRR#############

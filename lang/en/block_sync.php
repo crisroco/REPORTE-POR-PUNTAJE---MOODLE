@@ -45,4 +45,5 @@ $string['edit'] = 'Edicion Configuracion Plugin Padre Hijo';
 $string['weeks'] = 'Semanal';
 $string['onetopic'] = 'Pestañas';
 $string['topics'] = 'topicos';
+$string['social'] = 'social';
 $string['section'] = 'Sección';
