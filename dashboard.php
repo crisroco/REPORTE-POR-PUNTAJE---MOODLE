@@ -24,46 +24,22 @@ $main_url = new moodle_url('/blocks/sync/dashboard.php',array('id'=>$id));
 
 $tmp_course = get_course($courseid);
 // obtener modulos!!!
-//$modules = $DB->get_records('course_modules',array("course"=> $courseid));
-
-$k = 0;
-$act = array();
+//$modules = $DB->get_records('course_modules',array("course"=> $courseid));;
 
 $childs =  $DB->get_records('sync_related',array('main_id'=>$id));
-
-
-
 $modinfo = get_fast_modinfo($tmp_course);
-/*
-$table_hijos = new html_table();
-$table_hijos->head = array('Hijos','Sincronizado','','Modulos del hijo');
 
-//$l = array();
-    foreach($childs as $c){
-      $tmp = get_course($c->courseid);
-
-      $percent = sync_check_course($id,$c->courseid);
-
-      $table_hijos->data[] = array($tmp->fullname, 
-         generate_progressbar($percent['percent']), '',
-         html_writer::link(new moodle_url('/blocks/sync/dashboardchild.php?parent=' . $_GET['courseid'] .'&main='. $_GET['id'] . '&courseid='. $c->courseid),'Ingresar',array('class'=>'btn btn-default' , 'target' => '_self')));
-      
-      //$l[] = html_writer::tag('p',$tmp->fullname);
-    }
-
-    //$line = implode('', $l);
-*/
-
+//===================Secciones curso padre=======================
 $section ="SELECT cs.id, c.id as course, cs.section FROM {course_sections} cs
          INNER JOIN {course} c ON c.id = cs.course
          where c.id IN (?)";   
 $sections = $DB->get_records_sql($section, array($_GET['courseid']));
 $secciones = array();
 $secont = 0;
-foreach ($sections as $llave => $valor) {
+$prntonly = array(); 
+
+foreach ($sections as $llave => $valor) {  
    
-   
-   //===================ordenar por modulos=======================
    //$course_modules =  $DB->get_records('sync_modules',array('main_id'=>$id));
    $itemss = "SELECT sm.id, sm.module_id, cm.module, sm.main_id, cs.section FROM {sync_modules} sm
       INNER JOIN {course_modules} cm ON sm.module_id = cm.id
@@ -76,16 +52,13 @@ foreach ($sections as $llave => $valor) {
       continue;
    }
 
-   //==================FIN ordenar por modulos=======================
-
    $table = new html_table();
    $table->head = array('Actividades','Hijos Sincornizados');
    
 
    foreach ($course_modules as $key => $value) {
 
-
-           $exist = $DB->get_record('course_modules',array('id'=>$value->module_id) );
+      $exist = $DB->get_record('course_modules',array('id'=>$value->module_id));
           
       if ($exist){
          $class = '';
@@ -126,18 +99,22 @@ foreach ($sections as $llave => $valor) {
 
          //echo $value->module_id;
          $cm = $modinfo->get_cm($value->module_id);
-         $modinfo = get_fast_modinfo($tmp_course); 
+         if ($class != '') {
+            //$modinfo = get_fast_modinfo($tmp_course);
+            $tm = new stdClass();
+            $tm->id = $cm->id;
+            $tm->modname = $cm->modname;
+            $tm->name = $cm->name;
+            $tm->instance = $cm->instance;
+            $tm->section = $cm->sectionnum;
+            $tm->module_id = $cm->id;
+            $tm->status = $class;
+            $tm->main_id = $id;
+            array_push($prntonly, $tm);           
+          
+         }
+         
 
-
-         $tm = new stdClass();
-         $tm->id = $cm->id;
-         $tm->modname = $cm->modname;
-         $tm->name = $cm->name;
-         $tm->instance = $cm->instance;
-         $tm->module_id = $cm->id;
-         $tm->main_id = $id;
-
-         $act[] = $tm;
 
 
 
@@ -148,33 +125,32 @@ foreach ($sections as $llave => $valor) {
       }
     
    }
-      $outs = html_writer::start_tag('div', array('class' => 'panel-group sctn'));
-      $outs .= html_writer::start_tag('div', array('class' => 'panel panel-default'));
-         $outs .= html_writer::start_tag('div', array('class' => 'panel-heading'));
-            $outs .= html_writer::start_tag('h4', array('class' => 'panel-title'));
-               $outs .= html_writer::start_tag('div', array('class' => 'collapsable', 'target' => '#section'.$secont));    
-                  //$out .= html_writer::link($userurl, $userpicture);
-                  $outs .= html_writer::start_tag('a', array('class' => 'username'));
-                     $outs .=  get_string('section', 'block_sync').' '.$valor->section;
-                  $outs .= html_writer::end_tag('a'); 
-                  
-               $outs .= html_writer::end_tag('div');
-            $outs .= html_writer::end_tag('h4');
-         $outs .= html_writer::end_tag('div');
-         //$out = html_writer::start_tag('div', array('id' => 'collapse1', 'class' => 'panel-collapse collapse'));
-         $outs .= '<div id="section'.$secont.'" class="panel-collapse">
+   $outs = html_writer::start_tag('div', array('class' => 'panel-group sctn'));
+   $outs .= html_writer::start_tag('div', array('class' => 'panel panel-default'));
+      $outs .= html_writer::start_tag('div', array('class' => 'panel-heading'));
+         $outs .= html_writer::start_tag('h4', array('class' => 'panel-title'));
+            $outs .= html_writer::start_tag('div', array('class' => 'collapsable', 'target' => '#section'.$secont));
+               $outs .= html_writer::start_tag('a', array('class' => 'username'));
+                  $outs .=  get_string('section', 'block_sync').' '.$valor->section;
+               $outs .= html_writer::end_tag('a'); 
+               
+            $outs .= html_writer::end_tag('div');
+         $outs .= html_writer::end_tag('h4');
+      $outs .= html_writer::end_tag('div');
+      $outs .= '<div id="section'.$secont.'" class="panel-collapse">
 
-                     <div class="panel-body">';
+                  <div class="panel-body">';
 
 
-                  $outs .= html_writer::table($table);
-               $outs .= html_writer::end_tag('div');
+               $outs .= html_writer::table($table);
             $outs .= html_writer::end_tag('div');
          $outs .= html_writer::end_tag('div');
       $outs .= html_writer::end_tag('div');
-      array_push($secciones, $outs);
-      $secont++;
+   $outs .= html_writer::end_tag('div');
+   array_push($secciones, $outs);
+   $secont++;
 }
+//==================FIN secciones curso padre=======================
 
 //===============Tabla de Datos================
 
@@ -189,8 +165,8 @@ $synctimes = count($cursos);
 $temp = array_shift($cursos);
 $cursos = array();
 array_push($cursos, $temp);
-
 $ids = array();
+
 foreach ($cursos as $key => $value) {
    $ids[$value->main_id] =  $value->main_id;
    $child = explode(',', $value->child_id);
@@ -201,8 +177,10 @@ foreach ($cursos as $key => $value) {
 }
 $cont = 0;
 $crss = array();
+
 foreach ($ids as $key => $value) {
    $coord = '';
+   $mdsec = '';
    $coordinador = "SELECT CONCAT(u.firstname,' ', u.lastname) as coordinador FROM {course} c
                INNER JOIN {context} ctx ON ctx.instanceid = c.id
                INNER JOIN {role_assignments} ra ON ctx.id = ra.contextid
@@ -220,7 +198,7 @@ foreach ($ids as $key => $value) {
         GROUP BY c.shortname";
 
    $datos = $DB->get_records_sql($dato, array($value));
-
+     
    foreach ($datos as $key => $value) {
       $value->coordinador = $coord;
       $percent = sync_check_course($id,$value->id);
@@ -231,7 +209,99 @@ foreach ($ids as $key => $value) {
       }else{
          $crs = 'Hijo ' . $cont;
          $prgrs = generate_progressbar($percent['percent']);
+         
+         //solo en hijo         
+         $moduC = "SELECT cm.id, m.name as modname, cs.section, cm.course FROM {course_modules} cm
+                     INNER JOIN {modules} m ON m.id = cm.module
+                     INNER JOIN {course_sections} cs ON cs.id = cm.section
+                     WHERE cm.course IN (?)
+                     ORDER BY cs.section ASC, cm.module ASC";
+         $modulC = $DB->get_records_sql($moduC, array($value->id));
+         
+         $modulesC = $DB->get_records('sync_modules_course',array("course_id"=>$value->id),null,'module_id');
+
+           
+         $chlonly = array_keys($modulC);
+         foreach ($chlonly as $key => $chld) {
+           if (in_array($chld, array_keys($modulesC))) {
+             unset($modulC[$chld]);            
+           }
+         }
+
+
+            
+         //FIN solo en hijo
+         
+         $sec = "SELECT cs.section FROM {course_sections} cs where cs.course IN (?)";
+         $secs = $DB->get_records_sql($sec, array($value->id));
+
+         foreach ($secs as $key => $sec) {
+
+            $mdsec .= '<div class="collapsable" target="#parnt'.$value->id.$sec->section.'">
+                        <a class="username">seccion '.$sec->section.'</a>
+                       </div> ';
+            $contm = 0;
+            $tmpn = '';
+            $tmpp = array();
+            foreach ($prntonly as $key => $prnt) {
+               
+               if ($sec->section == $prnt->section) {
+                  $contm++;
+                  if ($prnt->modname != $tmpn) {
+                     $contm = 1;
+                  }                  
+                  $tmpp[$prnt->modname]= $contm;
+                  $tmpn = $prnt->modname;
+              }
+            }
+            $contm = 0;
+            $tmpn = '';
+            $tmpc = array();
+            foreach ($modulC as $key => $chld) {
+               
+               if ($sec->section == $chld->section) {
+                  $contm++;
+                  if ($chld->modname != $tmpn) {
+                     $contm = 1;
+                  }                  
+                  $tmpc[$chld->modname]= $contm;
+                  $tmpn = $chld->modname;
+              }
+            }
+
+
+            $mdsec .= '<div class="unsync" id="parnt'.$value->id.$sec->section.'">';
+            if ($tmpp == array() && $tmpc == array()) {
+              $mdsec .= '<strong><h5>Modulos correctos</h5></strong>';
+            }
+
+            if ($tmpp != array()) {
+
+              $mdsec .= '<h5>Modulos sin sincronizar</h5>
+                        <ul class="list-group">
+                           <li class="list-group-item" ><strong>Módulo</strong> <span class="badge">Cantidad</span></li>';      
+               foreach ($tmpp as $name => $md) {
+                  $mdsec .= '<li class="list-group-item">'.get_string($name, 'block_sync').'<span class="badge list">'. $md.'</span></li>';
+               }
+            }
+
+            $mdsec .= ' </ul>';
+
+            if ($tmpc != array()) {
+
+               $mdsec .= '<h5>Modulos creados en curso hijo</h5>
+                           <ul class="list-group">
+                           <li class="list-group-item"><strong>Módulo</strong> <span class="badge">Cantidad</span></li>';
+               foreach ($tmpc as $name => $md) {
+                  $mdsec .= '<li class="list-group-item">'.get_string($name, 'block_sync').'<span class="badge list">'. $md.'</span></li>';
+               }
+            }
+
+            $mdsec .= '</div>';
+         }
+
       }
+
       $table_datos = new html_table();
       $table_datos->head = array('Nombre','N de secciones','Formato', 'Coordinador','Sincronizado');
       $table_datos->data[] = array( $value->shortname, $value->sections,get_string($value->formato, 'block_sync'), $value->coordinador,$prgrs);
@@ -250,6 +320,7 @@ foreach ($ids as $key => $value) {
          $dts .= '<div id="course'.$value->id.'" class="panel-collapse">
                      <div class="panel-body datos">';
                   $dts .= html_writer::table($table_datos);
+                  $dts .= $mdsec;
                $dts .= html_writer::end_tag('div');
             $dts .= html_writer::end_tag('div');
          $dts .= html_writer::end_tag('div');
@@ -261,7 +332,7 @@ foreach ($ids as $key => $value) {
 }
 //==============FIN Tabla de Datos============
 
-//usuarios que ralizaron sincronización
+//==============usuarios que ralizaron sincronización==============
 $syncuser = "SELECT suh.user_id FROM {sync_user_history} suh WHERE suh.main_id IN (?) group by suh.user_id";
 $syncusers = $DB->get_records_sql($syncuser,array($courseid));
 $userdata = array();
@@ -306,7 +377,6 @@ $table_users->head = array('Cursos Sincronizados','Fecha', '# Sincronización');
                $out .= html_writer::end_tag('div');
             $out .= html_writer::end_tag('h4');
          $out .= html_writer::end_tag('div');
-         //$out = html_writer::start_tag('div', array('id' => 'collapse1', 'class' => 'panel-collapse collapse'));
          $out .= '<div id="collapse'.$value->user_id.'" class="panel-collapse">
 
                      <div class="panel-body">';
@@ -319,14 +389,10 @@ $table_users->head = array('Cursos Sincronizados','Fecha', '# Sincronización');
       $out .= html_writer::end_tag('div');
 
       array_push($userdata, $out);
-}
+}      
+// ==============FIN usuarios que ralizaron sincronización==============
 
-      
-// FIN usuarios que ralizaron sincronización
-
-//leyenda
-
-
+//==============leyenda==============
 $lgd = html_writer::start_tag('div', array('class' => 'legend'));
 	$lgd .= html_writer::start_tag('ul');
 		$lgd .= html_writer::start_tag('li', array('class' => 'finished'));
@@ -346,12 +412,10 @@ $lgd = html_writer::start_tag('div', array('class' => 'legend'));
 			 $lgd .= html_writer::tag('span', 'Eliminado');
 		$lgd .= html_writer::end_tag('li');*/
 	$lgd .= html_writer::end_tag('ul');
-$lgd .= html_writer::end_tag('div');
- 
-//FIN leyenda
+$lgd .= html_writer::end_tag('div'); 
+//==============FIN leyenda==============
 
-//IMPRIMIR PAGINA
-
+//==============IMPRIMIR PAGINA==============
 $PAGE->set_url($main_url);
 $title = 'Dashboard - ' .  $tmp_course->fullname;
 //$title = 'Dashboard - ';
@@ -362,6 +426,9 @@ print html_writer::tag('link','',array('href'=>$CFG->wwwroot.'/blocks/sync/asset
 
    echo '<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script> ';
 	echo '<script type="text/javascript" src="format.js"></script>';
+
+   echo '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>';
    
    echo  html_writer::start_tag('div', array('class' => 'cursos'));
       echo html_writer::tag('h3','Cursos'); 
@@ -369,9 +436,6 @@ print html_writer::tag('link','',array('href'=>$CFG->wwwroot.'/blocks/sync/asset
          echo $value;
        }
    echo html_writer::end_tag('div'); 
-   //echo html_writer::table($table_datos);
-      //echo html_writer::table($table_hijos);
-      //echo html_writer::table($table);  
    echo  html_writer::start_tag('div', array('class' => 'sectn'));
       echo html_writer::tag('h3','Secciones Curso padre');
         echo $lgd;
@@ -384,9 +448,8 @@ print html_writer::tag('link','',array('href'=>$CFG->wwwroot.'/blocks/sync/asset
       foreach ($userdata as $key => $value) {
          echo $value;
       }
-      //echo html_writer::table($table_users);
-      //echo $out;
    echo html_writer::end_tag('div');    
+ 
 
 
 print $OUTPUT->footer();

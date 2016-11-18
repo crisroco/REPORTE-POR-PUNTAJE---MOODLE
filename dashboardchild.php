@@ -33,11 +33,44 @@ $modulC = $DB->get_records('course_modules',array("course"=> $courseid));
 $modulesC = $DB->get_records('sync_modules_course',array("course_id"=>$sync->courseid),null,'module_id');
 $childs =  $DB->get_records('sync_related',array('main_id'=>$main));
 $itemss = "SELECT sm.id, sm.module_id, cm.module, sm.main_id, m.name FROM {sync_modules} sm
-	INNER JOIN {course_modules} cm ON sm.module_id = cm.id
+   INNER JOIN {course_modules} cm ON sm.module_id = cm.id
    INNER JOIN {modules} m ON m.id = cm.module
-	WHERE sm.main_id IN (?)	
-	ORDER BY cm.module ASC, sm.module_id DESC ";
+   WHERE sm.main_id IN (?) 
+   ORDER BY cm.module ASC, sm.module_id DESC ";
 $course_modules = $DB->get_records_sql($itemss, array($main));
+//imprimir solo en el hijo
+$chlonly = array_keys($modulC);
+foreach ($chlonly as $key => $value) {
+  if (in_array($value, array_keys($modulesC))) {
+    unset($chlonly[$key]); 
+  }
+}
+echo "<pre>";
+print_r($chlonly);
+echo "</pre>";
+
+$table2 = new html_table();
+$table2->head = array('Actividades creadas solo en el curso hijo');
+
+$modinfo = get_fast_modinfo($courseid);
+
+if ($chlonly == array()) {
+   $activi = 'SIN ACTIVIDADES CREADAS';
+   $table2->data[] = array($activi);
+}else{
+   foreach ($chlonly as $key => $value) {
+      
+      $cm = $modinfo->get_cm($value);
+    
+      $infomod = $DB->get_record('course_modules', array("id" => $value));
+     
+      //$mod = array_shift($infomod);
+      $activi = html_writer::tag('p', html_writer::empty_tag('img', array('src' => $cm->get_icon_url(),
+                   'class' => 'iconlarge activityicon', 'alt' => ' ', 'role' => 'presentation')) .' ' . $cm->name, array('class' => '')) ;
+      $table2->data[] = array($activi); 
+   }
+}
+//FIN imprimir solo en el hijo
 
 /*//imprimir solo en el padre
 $prntonly = array();
@@ -64,54 +97,23 @@ $table->head = array('Actividades sin sincronizar');
 
 $modinfo = get_fast_modinfo($parent);
 if ($prntonly == array()) {
-	$activi = 'SIN ACTIVIDADES PENDIENTES DE SINCRIZACIÓN';
-	$table->data[] = array($activi);
+   $activi = 'SIN ACTIVIDADES PENDIENTES DE SINCRIZACIÓN';
+   $table->data[] = array($activi);
 }else{
-	foreach ($prntonly as $key => $value) {
-	   
-	   $cm = $modinfo->get_cm($value);
-	 
-	   $infomod = $DB->get_record('course_modules', array("id" => $value));
-	  
-	   //$mod = array_shift($infomod);
-	   $activi = html_writer::tag('p', html_writer::empty_tag('img', array('src' => $cm->get_icon_url(),
-	                'class' => 'iconlarge activityicon', 'alt' => ' ', 'role' => 'presentation')) .' ' . $cm->name, array('class' => 'create')) ;
-	   $table->data[] = array($activi); 
-	}
+   foreach ($prntonly as $key => $value) {
+      
+      $cm = $modinfo->get_cm($value);
+    
+      $infomod = $DB->get_record('course_modules', array("id" => $value));
+     
+      //$mod = array_shift($infomod);
+      $activi = html_writer::tag('p', html_writer::empty_tag('img', array('src' => $cm->get_icon_url(),
+                   'class' => 'iconlarge activityicon', 'alt' => ' ', 'role' => 'presentation')) .' ' . $cm->name, array('class' => 'create')) ;
+      $table->data[] = array($activi); 
+   }
 }
 //FIN imprimir solo en el padre*/
 
-//imprimir solo en el hijo
-
-$chlonly = array_keys($modulC);
-foreach ($chlonly as $key => $value) {
-  if (in_array($value, array_keys($modulesC))) {
-    unset($chlonly[$key]); 
-  }
-}
-
-$table2 = new html_table();
-$table2->head = array('Actividades creadas solo en el curso hijo');
-
-$modinfo = get_fast_modinfo($courseid);
-
-if ($chlonly == array()) {
-	$activi = 'SIN ACTIVIDADES CREADAS';
-	$table2->data[] = array($activi);
-}else{
-	foreach ($chlonly as $key => $value) {
-	   
-	   $cm = $modinfo->get_cm($value);
-	 
-	   $infomod = $DB->get_record('course_modules', array("id" => $value));
-	  
-	   //$mod = array_shift($infomod);
-	   $activi = html_writer::tag('p', html_writer::empty_tag('img', array('src' => $cm->get_icon_url(),
-	                'class' => 'iconlarge activityicon', 'alt' => ' ', 'role' => 'presentation')) .' ' . $cm->name, array('class' => '')) ;
-	   $table2->data[] = array($activi); 
-	}
-}
-//FIN imprimir solo en el hijo
 
 //cursos actualizados en padre
 $tmp_course = get_course($parent);
@@ -120,9 +122,7 @@ $table = new html_table();
 $table->head = array('Actividades sin sincronizar');
 $table3 = new html_table();
 $table3->head = array('Actividades actualizadas en el padre sin sincronizar');
-echo "<pre>";
-print_r($course_modules);
-echo "</pre>";
+
 foreach ($course_modules as $key => $value) {
 
         $exist = $DB->get_record('course_modules',array('id'=>$value->module_id) );

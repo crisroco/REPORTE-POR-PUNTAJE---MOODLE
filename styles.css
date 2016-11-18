@@ -7,6 +7,10 @@ a.username {
     margin-left: 4%;
     cursor: pointer;
 }
+h4.username {
+    cursor: pointer;
+}
+
 
 .panel-group {
     margin-bottom: 0px !important;
@@ -98,4 +102,18 @@ a.username {
  
 .panel-body.datos {
     padding: 0px !important;
+}
+
+/*datos cursos hijos*/
+.unsync {
+    width: 88%;
+    margin: 10px auto;
+    display: none;
+}
+.list-group {
+    width: 80%;
+}
+
+span.badge.list {
+    margin-right: 3%;
 }
