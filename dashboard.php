@@ -202,13 +202,16 @@ foreach ($ids as $key => $value) {
    foreach ($datos as $key => $value) {
       $value->coordinador = $coord;
       $percent = sync_check_course($id,$value->id);
-
+      $value->porcentaje = $percent['percent'];
+       echo "<pre>";
+         print_r($datos);
+         echo "</pre>";
       if ($value->id == $_GET['courseid']) {
          $crs = 'Padre';
          $prgrs = '';
       }else{
          $crs = 'Hijo ' . $cont;
-         $prgrs = generate_progressbar($percent['percent']);
+         $prgrs = generate_progressbar($percent['percent']);        
          
          //solo en hijo         
          $moduC = "SELECT cm.id, m.name as modname, cs.section, cm.course FROM {course_modules} cm
