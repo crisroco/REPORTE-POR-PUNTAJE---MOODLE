@@ -228,7 +228,7 @@ $section_course = required_param('section_course', PARAM_INT);
                )
            )); 
 
-         $objWorkSheet->setCellValueByColumnAndRow(0,1, 'Reporte de participacion');
+         $objWorkSheet->setCellValueByColumnAndRow(0,1, 'Reporte de participacion Semana'.$section_course);
          $objWorkSheet->setCellValueByColumnAndRow(1,3, 'Actividad');
          $objWorkSheet->setCellValueByColumnAndRow(2,3, 'Tipo');
          $objWorkSheet->setCellValueByColumnAndRow(3,3, 'Puntaje');
