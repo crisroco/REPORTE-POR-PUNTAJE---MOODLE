@@ -14,7 +14,9 @@ require_login();
 $categoryid = required_param('categoryid', PARAM_INT);
 $section_course = required_param('section_course', PARAM_INT);
 
-
+ header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  header('Content-Disposition: attachment;filename="Reporte de participacion.xlsx"');
+  header('Cache-Control: max-age=0');
 
 
 /**
@@ -48,14 +50,15 @@ $section_course = required_param('section_course', PARAM_INT);
             unset($cursos[$key]);
          }
       }
+
       if ($cursos == array()) {
-         echo 'No existen cursos ';
+         die();
       }
       //echo dirname(__FILE__) . '<br>';
 
-      echo "<pre>";
+     /* echo "<pre>";
       print_r($cursos);
-      echo "</pre>";
+      echo "</pre>";*/
    }   
 
 
@@ -117,9 +120,9 @@ $section_course = required_param('section_course', PARAM_INT);
          
       }
 
-         echo "<pre>";
+         /*echo "<pre>";
          print_r($actividades);
-         echo "</pre>";    
+         echo "</pre>"; */   
 
    /**
       calcular puntaje 
@@ -159,22 +162,21 @@ $section_course = required_param('section_course', PARAM_INT);
 
                $time_upload = $value->allowsubmissionsfromdate;
                $one_day = $time_upload+86400;
-               $two_day = $time_upload+86400;
-               $three_day = $time_upload+86400;
-               $four_day = $time_upload+86400;
-               $five_day = $time_upload+86400;
+               $two_day = $one_day+86400;
+               $three_day = $two_day+86400;
+               $four_day = $three_day+86400;
 
                if ($time_upload < $now) {
                   $puntaje = 100;
                }elseif ($now == $one_day) {
                   $puntaje = 80;
-               }elseif ($now == $one_day) {
+               }elseif ($now == $two_day) {
                   $puntaje = 60;                  
-               }elseif ($now == $one_day) {
+               }elseif ($now == $three_day) {
                   $puntaje = 40;                  
-               }elseif ($now == $one_day) {
+               }elseif ($now == $four_day) {
                   $puntaje = 20;                  
-               }elseif ($now == $one_day) {
+               }else{
                   $puntaje = 0;                  
                }   
             
@@ -193,17 +195,69 @@ $section_course = required_param('section_course', PARAM_INT);
          }
       }
 
-      echo "<pre>";
+      /*echo "<pre>";
       print_r($all_data);
-      echo "</pre>";
+      echo "</pre>";*/
 
-      $fecha = date_create();
+     
+
+     //########### EXCEL ########################
+
+        include_once 'Classes/PHPExcel.php'; 
+         $phpexcel = new PHPExcel();
+         $phpexcel->setActiveSheetIndex(0);  
+         $objWorkSheet = $phpexcel->getActiveSheet()->setTitle('Reporte de participacion');
+
+         //$objWorkSheet->getColumnDimension('A')->setAutoSize(true);
+         $objWorkSheet->getColumnDimension('B')->setAutoSize(true);
+         $objWorkSheet->getColumnDimension('C')->setAutoSize(true);
+         $objWorkSheet->getColumnDimension('D')->setAutoSize(true);
+         $objWorkSheet->getColumnDimension('E')->setAutoSize(true);
+
+         $objWorkSheet->mergeCells('A1:B1');
+
+         $objWorkSheet->getStyle('A1:L400')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER)->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+
+         $objWorkSheet->getStyle("A1:D3")->getFont()->setBold(true);
+        
+         $objWorkSheet->getStyle('A1:B1')->applyFromArray(
+           array(
+               'fill' => array(
+                   'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                   'color' => array('rgb' => '3f8cce')
+               )
+           )); 
+
+         $objWorkSheet->setCellValueByColumnAndRow(0,1, 'Reporte de participacion');
+         $objWorkSheet->setCellValueByColumnAndRow(1,3, 'Actividad');
+         $objWorkSheet->setCellValueByColumnAndRow(2,3, 'Tipo');
+         $objWorkSheet->setCellValueByColumnAndRow(3,3, 'Puntaje');
+
+          $styleArray = array(    
+            'alignment' => array(
+                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+            ),
+            'borders' => array(
+                'allborders' => array(
+                    'style' => PHPExcel_Style_Border::BORDER_THIN,
+                ),
+            ));
 
 
-date_timestamp_set($fecha, 1491886800+86400+86400);
-echo date_format($fecha, 'U = Y-m-d H:i:s') . "<br>";
+         $tr = 4;
+         foreach ($all_data as $key => $value) {
+            $objWorkSheet->getStyle('B3:D'.$tr)->applyFromArray($styleArray); 
+            $objWorkSheet->setCellValueByColumnAndRow(1,$tr, $value->activity_name);
+            $objWorkSheet->setCellValueByColumnAndRow(2,$tr, $value->tipo);
+            $objWorkSheet->setCellValueByColumnAndRow(3,$tr, $value->puntaje);
 
-date_timestamp_set($fecha, 1491886800);
-echo date_format($fecha, 'U = Y-m-d H:i:s') . "\n";
+            $tr++;
+         }
+
+
+
+         $writer = PHPExcel_IOFactory::createWriter($phpexcel, 'Excel2007');
+        $writer->setIncludeCharts(TRUE);
+        $writer->save('php://output');
 
  
