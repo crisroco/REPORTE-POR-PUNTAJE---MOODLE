@@ -61,57 +61,67 @@ $section_course = required_param('section_course', PARAM_INT);
    }   
 
 
+   /**
+      devuelve las encuestas vencidas y de una semana especifica
+   */
 
+      //cm.instance -> es el id del modulo
+   $now = microtime(true);
+   $actividades = array();
 
-/**
-   devuelve las encuestas vencidas y de una semana especifica
-*/
+      foreach ($cursos as $key => $value) {
+         $type_activity = "SELECT cm.instance, cm.module
+                           from {course_modules} as cm
+                           INNER JOIN {course_sections} as cs ON cm.section = cs.id
+                           where cs.course = $value->course_id AND cs.section = $section_course ";
+         $tipo_actividad = $DB->get_records_sql($type_activity);
+         echo "<pre> #########";
+         print_r($tipo_actividad);
+         echo "</pre>#########"; 
 
+         //FLUJO DE FEEDBACK
+          $sql_feedback = "SELECT fb.id,  fb.name, fb.course, cs.section as semana , cm.module 
+                           from {feedback} as fb  
+                           join {course_modules} as cm ON fb.id = cm.instance
+                           join {course_sections} as cs ON cm.section = cs.id
+                           where fb.course= $value->course_id AND fb.timeclose < $now AND cs.section = $section_course" ;
 
-$now = microtime(true);
-$feedback_id = array();
-
-   foreach ($cursos as $key => $value) {
-       $sql_feedback = "SELECT fb.id, fb.name, fb.course, cs.section as semana 
-                        from {feedback} as fb  
-                        join {course_modules} as cm ON fb.id = cm.instance
-                        join {course_sections} as cs ON cm.section = cs.id
-                        where fb.course= $value->course_id AND fb.timeclose < $now AND cs.section = $section_course" ;
-
-       $encuestas = $DB->get_records_sql($sql_feedback);
-       if ($encuestas != array()) {
-         foreach ($encuestas as $llave => $valor) {
-            array_push($feedback_id, $valor);
-         }
-       }
-   }
-      echo "<pre>";
-      print_r($feedback_id);
-      echo "</pre>";    
-
-/**
-   calcular puntaje 
-*/
-   $all_data = array();
-   foreach ($feedback_id as $key => $value) {
-      $puntaje = 0;
-      $sql_feedback_cantidad = "SELECT count(fc.id) as cantidad_participante from {feedback_completed} as fc where fc.feedback = $value->id";
-      $encuestas_cantidad = $DB->get_records_sql($sql_feedback_cantidad);
-      foreach ($encuestas_cantidad as $llave => $valor) {        
-        
-         $puntaje = ($valor->cantidad_participante/$cursos[$value->course]->students)*100;
+          $actividad = $DB->get_records_sql($sql_feedback);
+          if ($actividad != array()) {
+            foreach ($actividad as $llave => $valor) {
+               array_push($actividades, $valor);
+            }
+          }
+         //FIN - FLUJO DE FEEDBACK 
       }
-      $fb_name = $value->name;
 
-      $datos_feedback = new stdClass();
-      $datos_feedback->activity_name = $fb_name;
-      $datos_feedback->tipo = 'Feedback';
-      $datos_feedback->puntaje = $puntaje;
-      array_push($all_data, $datos_feedback);
-   }
+         echo "<pre>";
+         print_r($actividades);
+         echo "</pre>";    
 
-   echo "<pre>";
-   print_r($all_data);
-   echo "</pre>";
+   /**
+      calcular puntaje 
+   */
+      $all_data = array();
+      foreach ($actividades as $key => $value) {
+         $puntaje = 0;
+         $sql_feedback_cantidad = "SELECT count(fc.id) as cantidad_participante from {feedback_completed} as fc where fc.feedback = $value->id";
+         $encuestas_cantidad = $DB->get_records_sql($sql_feedback_cantidad);
+         foreach ($encuestas_cantidad as $llave => $valor) {        
+           
+            $puntaje = ($valor->cantidad_participante/$cursos[$value->course]->students)*100;
+         }
+         $fb_name = $value->name;
+
+         $datos_feedback = new stdClass();
+         $datos_feedback->activity_name = $fb_name;
+         $datos_feedback->tipo = 'Feedback';
+         $datos_feedback->puntaje = $puntaje;
+         array_push($all_data, $datos_feedback);
+      }
+
+      echo "<pre>";
+      print_r($all_data);
+      echo "</pre>";
 
  
