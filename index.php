@@ -49,6 +49,7 @@ if ($filters->is_cancelled()) {
 
 
 print $OUTPUT->header();
+
  $urll = $CFG->wwwroot.'/report/reportpoints/reporte_feedback.php';
    print html_writer::start_tag('div', array('class' => 'linkreprote'));
       print html_writer::link($urll, 'ir a Reporte de Encuesta');
