@@ -49,5 +49,10 @@ if ($filters->is_cancelled()) {
 
 
 print $OUTPUT->header();
+  
+   $urll = $CFG->wwwroot.'/report/reportpoints/index.php';
+   print html_writer::start_tag('div', array('class' => 'linkreprote'));
+       print html_writer::link($urll, 'ir a Reporte de Participación',array('class' => 'lalal'));
+   print html_writer::end_tag('div');
   $filters->display();
 print $OUTPUT->footer();

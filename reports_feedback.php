@@ -258,27 +258,3 @@ $writer = PHPExcel_IOFactory::createWriter($phpexcel, 'Excel2007');
 
 
 
-
-
-
-
-        // INSERTAR CURSOS EN CATEGORA
-         //array_push($categoria, $value); 
-
-
-/*$encuesta=$DB->get_record('course_modules',array('id' => $_GET['id']) ,'id,instance');  
-$questionid = $DB->get_records('feedback_item',array('feedback'=>$encuesta->instance),null,'id,name,typ,feedback,presentation');
-
-//nombre del cuestionario y fecha actual
-$other = $DB->get_record('feedback',array('id'=>$encuesta->instance),'id,name');
-
-$fbid = end($questionid);//obtiene ultimo objeto del array
-$courseid = $DB->get_records('feedback',array('id' => $fbid->feedback),null,'id as fbid, course');
-
-
-
-foreach ($questionid as $key=>$value) {
-
-    $questions = $DB->get_records('feedback_item', array('id' => $value->id), null, 'id, name');
-    
-}*/

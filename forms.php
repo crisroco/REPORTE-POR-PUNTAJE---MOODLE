@@ -36,7 +36,7 @@ class reportpoints_form extends moodleform {
 
         $mform->addElement('select', 'section_course', get_string('section_course','report_reportpoints'), $semana);
 
-        $this->add_action_buttons(false, 'exportar');
+        $this->add_action_buttons(false, 'Exportar reporte');
 
     }
 
