@@ -12,7 +12,7 @@ require_once('forms.php');
 
 //$values = array('categoryid'=>$categoryid,'section_course'=>1);
 
-$url = new moodle_url('/report/reportpoints/index.php');
+$url = new moodle_url('/report/reportpoints/reporte_feedback.php');
 $PAGE->set_url($url);
 $PAGE->set_pagelayout('report');
 $context = context_system::instance();
@@ -38,11 +38,11 @@ $PAGE->set_heading($title);
 
 //Form processing and displaying is done here
 if ($filters->is_cancelled()) {
-  $returnurl = new moodle_url('/report/reportpoints/index.php');
+  $returnurl = new moodle_url('/report/reportpoints/reporte_feedback.php');
   redirect($returnurl);
 } else if ($data = $filters->get_data()) { 
    
-   $export = '/report/reportpoints/reports.php?categoryid='.$data->categoria.'&section_course='.$data->section_course;
+   $export = '/report/reportpoints/reports_feedback.php?categoryid='.$data->categoria.'&section_course='.$data->section_course;
   $returnurl = new moodle_url($export);
   redirect($returnurl);
 }

@@ -54,11 +54,6 @@ $section_course = required_param('section_course', PARAM_INT);
       if ($cursos == array()) {
          die();
       }
-      //echo dirname(__FILE__) . '<br>';
-
-     /* echo "<pre>";
-      print_r($cursos);
-      echo "</pre>";*/
    }   
 
 
@@ -78,9 +73,7 @@ $section_course = required_param('section_course', PARAM_INT);
          //solo debe haber una encuesta o una tarea por semana
          $tipo_actividad = $DB->get_record_sql($type_activity);
         
-         /*echo "<pre> #########";
-         print_r($tipo_actividad);
-         echo "</pre>#########"; */
+         
          
          if (is_object($tipo_actividad)) {
             $activ = $tipo_actividad->module;
@@ -118,11 +111,7 @@ $section_course = required_param('section_course', PARAM_INT);
          //FIN - FLUJO DE TAREA 
          }
          
-      }
-
-         /*echo "<pre>";
-         print_r($actividades);
-         echo "</pre>"; */   
+      } 
 
    /**
       calcular puntaje 
@@ -195,10 +184,6 @@ $section_course = required_param('section_course', PARAM_INT);
          }
       }
 
-      /*echo "<pre>";
-      print_r($all_data);
-      echo "</pre>";*/
-
      
 
      //########### EXCEL ########################
@@ -226,7 +211,8 @@ $section_course = required_param('section_course', PARAM_INT);
                    'type' => PHPExcel_Style_Fill::FILL_SOLID,
                    'color' => array('rgb' => '3f8cce')
                )
-           )); 
+           )
+         ); 
 
          $objWorkSheet->setCellValueByColumnAndRow(0,1, 'Reporte de participacion Semana'.$section_course);
          $objWorkSheet->setCellValueByColumnAndRow(1,3, 'Actividad');

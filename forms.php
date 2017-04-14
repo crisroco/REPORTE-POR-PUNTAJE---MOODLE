@@ -30,7 +30,9 @@ class reportpoints_form extends moodleform {
             array_push($semana, $nomsemana);
         }
 
-        $mform->addElement('select', 'categoria', get_string('course_category','report_reportpoints'), $categorias, array('class'=>'select2'));
+        //$mform->addElement('select', 'categoria', get_string('course_category','report_reportpoints'), $categorias, array('class'=>'select2'));
+
+        $mform->addElement('select', 'categoria', get_string('course_category','report_reportpoints'), $categorias);
 
         $mform->addElement('select', 'section_course', get_string('section_course','report_reportpoints'), $semana);
 
