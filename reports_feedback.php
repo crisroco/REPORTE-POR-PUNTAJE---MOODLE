@@ -15,12 +15,13 @@ $section_course = required_param('section_course', PARAM_INT);
 
 
  header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-  header('Content-Disposition: attachment;filename="Reporte de participacion.xlsx"');
+  header('Content-Disposition: attachment;filename="Reporte de encuestas.xlsx"');
   header('Cache-Control: max-age=0');
 include_once 'Classes/PHPExcel.php'; 
          $phpexcel = new PHPExcel();
          $phpexcel->setActiveSheetIndex(0);  
-         $objWorkSheet = $phpexcel->getActiveSheet()->setTitle('Reporte de participacion');
+         $objWorkSheet = $phpexcel->getActiveSheet()->setTitle('Reporte por usuario');
+         $sheet2 = $phpexcel->createSheet()->setTitle('reporte grafico');
          foreach(range('A','Z') as $columnID) {
             $objWorkSheet->getColumnDimension($columnID)
                  ->setAutoSize(true);
@@ -129,7 +130,7 @@ include_once 'Classes/PHPExcel.php';
 
 
          //RETORNA LOS USUARIOS QUE REALIZARON LA ENCUESTA Y RESPUESTAS QUE MARCARON 
-         $sql = "SELECT fv.id, fc.userid, f.timemodified, u.firstname, c.fullname, u.lastname, u.username, fi.presentation, fv.value, fi.typ,f.name as encuesta, fi.name as pregunta
+         $sql = "SELECT fv.id, fc.userid, f.timemodified, u.firstname, c.fullname, u.lastname, u.username, fi.presentation, fv.value, fi.typ,f.name as encuesta, fi.name as pregunta, fi.id as pregunta_id
             FROM {user} u
             INNER JOIN {feedback_completed} fc ON fc.userid = u.id
             INNER JOIN {feedback} f ON f.id = fc.feedback
@@ -160,7 +161,7 @@ include_once 'Classes/PHPExcel.php';
                 //IMPRIMIR SATOS DEL ALUMNO  
                 $colum_alumno = 0;
                 foreach ($qstn as $k => $v) {
-                    if ($k == 'value' || $k == 'presentation' || $k == 'typ' || $k == 'encuesta' || $k == 'pregunta' || $k == 'username' || $k == 'id' || $k == 'userid' || $k == 'timemodified'|| $k == 'fullname' ) {
+                    if ($k == 'value' || $k == 'presentation' || $k == 'typ' || $k == 'encuesta' || $k == 'pregunta' || $k == 'username' || $k == 'id' || $k == 'userid' || $k == 'timemodified'|| $k == 'fullname'|| $k == 'cursoID'|| $k == 'pregunta_id') {
                         continue;
                     }
                     if ( $qstn->userid  != $keytemp) {  
@@ -193,7 +194,7 @@ include_once 'Classes/PHPExcel.php';
                 //IMPRIMIR RESPUESTAS DEL ALUMNO
                  foreach ($qstn as $ky => $vl) {
                    
-                    if ($ky == 'firstname' || $ky == 'lastname' || $ky == 'presentation' || $ky == 'typ' || $ky == 'encuesta' || $ky == 'pregunta' || $ky == 'username' || $ky == 'id' || $ky == 'userid' || $ky == 'timemodified'|| $ky == 'fullname' ) {
+                    if ($ky == 'firstname' || $ky == 'lastname' || $ky == 'presentation' || $ky == 'typ' || $ky == 'encuesta' || $ky == 'pregunta' || $ky == 'username' || $ky == 'id' || $ky == 'userid' || $ky == 'timemodified'|| $ky == 'fullname' || $k == 'cursoID'|| $k == 'pregunta_id') {
                         continue;
                     }
                     if ( $qstn->userid  == $keytemp) {  
@@ -236,21 +237,64 @@ include_once 'Classes/PHPExcel.php';
                 $cont_temp++;
             }
       }
+
       $row_alumnos += 4;
       $row_respuestas += 4;
       $row_title1 = $row_alumnos - 2;
       $row_titulos = $row_alumnos - 1;
 
+      //HOJA 2 REPORTE
+
+      //cantida de veces marcado
+      $respuestas = array();
+      foreach ($preguta_usuario as $ky => $val) {
+         if ($val->typ != 'multichoice') {
+            continue;
+         }
+         $nresp = count(explode('|',$val->presentation));
+         array_push($respuestas, $val->value);
+         
+      }  
+      $cant_select = array_count_values($respuestas);
+
+      for ($i=1; $i <= $nresp; $i++) { 
+          if (isset($cant_select[$i])) {
+             continue;
+          }else{
+            $cant_select[$i] = 0;
+          }
+      }   
+      ksort($cant_select);
+      $tr_titl = 3; 
+      $sheet2->setCellValueByColumnAndRow(1,$tr_titl, 'Etiqueta');
+      $sheet2->setCellValueByColumnAndRow(2,$tr_titl, 'Pregunta');
+      $sheet2->setCellValueByColumnAndRow(3,$tr_titl, 'Respuestas');
+
+      $tr_canti = 5;
+      $td_canti = 3;
+      $tr_canti_tl = 4;
+      $td_canti_tl = 3;
+      foreach ($cant_select as $prg => $canti) {
+         $res_titl = 'Respuesta '.$prg;
+         $sheet2->setCellValueByColumnAndRow($td_canti_tl,$tr_canti_tl, $res_titl);
+         $sheet2->setCellValueByColumnAndRow($td_canti,$tr_canti, $canti);
+         $td_canti_tl++;
+         $td_canti++;
+      }
+
+
+      $tr_canti_tl += 2;
+      $tr_titl += $nresp*2 + 1;
+      //FIN - cantida de veces marcado
      
        if ($actividad != array()) {
          //foreach ($actividad as $llave => $valor) {
             array_push($actividades, $actividad);
          //}
        }
+  }      
+//        $sheet2 = $phpexcel->createSheet()->setTitle('reporte grafico');
 
-
-     
-   }      
 $writer = PHPExcel_IOFactory::createWriter($phpexcel, 'Excel2007');
         $writer->setIncludeCharts(TRUE);
         $writer->save('php://output');

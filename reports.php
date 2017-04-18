@@ -81,10 +81,11 @@ $section_course = required_param('section_course', PARAM_INT);
          //FLUJO DE FEEDBACK
          if ($activ == 7) {
             
-             $sql_feedback = "SELECT fb.id,  fb.name, fb.course, cs.section as semana , cm.module 
+             $sql_feedback = "SELECT fb.id,  fb.name, fb.course, c.shortname as curname, cs.section as semana , cm.module 
                               from {feedback} as fb  
                               join {course_modules} as cm ON fb.id = cm.instance
                               join {course_sections} as cs ON cm.section = cs.id
+                              join {course} as c ON cm.course = c.id
                               where fb.course= $value->course_id AND fb.timeclose < $now AND cs.section = $section_course" ;
 
              $actividad = $DB->get_records_sql($sql_feedback);
@@ -96,10 +97,11 @@ $section_course = required_param('section_course', PARAM_INT);
          //FIN - FLUJO DE FEEDBACK
          //FLUJO DE TAREA 
          }elseif ($activ == 1) {
-            $sql_assign = "SELECT ass.id,  ass.name, ass.course, cs.section as semana , cm.module 
+            $sql_assign = "SELECT ass.id,  ass.name, ass.course, c.shortname as curname, cs.section as semana , cm.module 
                               from {assign} as ass  
                               join {course_modules} as cm ON ass.id = cm.instance
                               join {course_sections} as cs ON cm.section = cs.id
+                              join {course} as c ON cm.course = c.id
                               where ass.course= $value->course_id  AND cs.section = $section_course" ;
 
              $actividad = $DB->get_records_sql($sql_assign);
@@ -113,11 +115,16 @@ $section_course = required_param('section_course', PARAM_INT);
          
       } 
 
+
+
    /**
       calcular puntaje 
    */
       $all_data = array();
-      foreach ($actividades as $key => $value) {
+      foreach ($actividades as $key => $value) {       
+
+          $cur_name = $value->curname;
+
          if ($value->module == 7) {
             $puntaje = 0;
             $sql_feedback_cantidad = "SELECT count(fc.id) as cantidad_participante from {feedback_completed} as fc where fc.feedback = $value->id";
@@ -132,6 +139,7 @@ $section_course = required_param('section_course', PARAM_INT);
             $datos_feedback->activity_name = $fb_name;
             $datos_feedback->tipo = 'Encuesta';
             $datos_feedback->puntaje = $puntaje.'%';
+            $datos_feedback->curname = $cur_name;
             array_push($all_data, $datos_feedback);
 
          }elseif ($value->module == 1) {
@@ -176,6 +184,7 @@ $section_course = required_param('section_course', PARAM_INT);
                $datos_tarea->activity_name = $ass_name;
                $datos_tarea->tipo = 'Tarea';
                $datos_tarea->puntaje = $puntaje;
+               $datos_tarea->curname = $cur_name;
                array_push($all_data, $datos_tarea);
             }
             
@@ -183,6 +192,11 @@ $section_course = required_param('section_course', PARAM_INT);
             
          }
       }
+      /*echo "<pre>";
+          print_r($all_data);
+         echo "</pre>";*/
+     
+
 
      
 
@@ -215,6 +229,7 @@ $section_course = required_param('section_course', PARAM_INT);
          ); 
 
          $objWorkSheet->setCellValueByColumnAndRow(0,1, 'Reporte de participacion Semana'.$section_course);
+         $objWorkSheet->setCellValueByColumnAndRow(0,3, 'Curso');
          $objWorkSheet->setCellValueByColumnAndRow(1,3, 'Actividad');
          $objWorkSheet->setCellValueByColumnAndRow(2,3, 'Tipo');
          $objWorkSheet->setCellValueByColumnAndRow(3,3, 'Puntaje');
@@ -231,8 +246,10 @@ $section_course = required_param('section_course', PARAM_INT);
 
 
          $tr = 4;
+
          foreach ($all_data as $key => $value) {
-            $objWorkSheet->getStyle('B3:D'.$tr)->applyFromArray($styleArray); 
+            $objWorkSheet->getStyle('A3:D'.$tr)->applyFromArray($styleArray); 
+            $objWorkSheet->setCellValueByColumnAndRow(0,$tr, $value->curname);
             $objWorkSheet->setCellValueByColumnAndRow(1,$tr, $value->activity_name);
             $objWorkSheet->setCellValueByColumnAndRow(2,$tr, $value->tipo);
             $objWorkSheet->setCellValueByColumnAndRow(3,$tr, $value->puntaje);
