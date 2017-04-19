@@ -88,7 +88,46 @@
 
       }      
       //echo json_encode($cursos);
+      $encuestas = array();
+      $encuestas[] = $preguta_usuario;
+
+      $dato = array();
+
+      //foreach ($preguta_usuario as $encuesta) {                     
+             
+            foreach ($preguta_usuario as $index => $encuestado) {
+                if ($encuestado->typ != 'multichoice') {
+                 continue;
+                }
+                //$dato[$index] = $encuestado;
+                //$dato[$index] = $encuestado["encuesta"];
+                if(!isset($dato[$encuestado->encuesta])){
+                    $dato[$encuestado->encuesta] = array();
+                }
+                
+                if(!is_null($dato[$encuestado->encuesta])){
+                    if(!$dato[$encuestado->encuesta][$encuestado->pregunta]){
+                        $dato[$encuestado->encuesta][$encuestado->pregunta] = array();
+                    }
+                    
+                    if(!is_null($dato[$encuestado->encuesta][$encuestado->pregunta])){
+                        if(!$dato[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value]){
+                            $dato[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value] = 0;
+                        }
+                        
+                        if(!is_null($dato[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value])){
+                            $dato[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value]++;
+                        }
+                    }
+                }
+            }
+      //}
+
+
         
+      echo "**<pre>";
+        print_r($dato);
+        echo "</pre>##";
       /*echo "<pre>";
       print_r($preguta_usuario);
       echo "</pre>";*/

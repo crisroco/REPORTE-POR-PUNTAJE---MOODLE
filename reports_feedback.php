@@ -244,7 +244,6 @@ include_once 'Classes/PHPExcel.php';
       $row_titulos = $row_alumnos - 1;
 
       //HOJA 2 REPORTE
-
       //cantida de veces marcado
       $respuestas = array();
       foreach ($preguta_usuario as $ky => $val) {
@@ -255,16 +254,48 @@ include_once 'Classes/PHPExcel.php';
          array_push($respuestas, $val->value);
          
       }  
-      $cant_select = array_count_values($respuestas);
 
-      for ($i=1; $i <= $nresp; $i++) { 
-          if (isset($cant_select[$i])) {
-             continue;
-          }else{
-            $cant_select[$i] = 0;
-          }
-      }   
-      ksort($cant_select);
+      $encuestas = array();
+      $encuestas[] = $preguta_usuario;
+
+      $dato = array();
+
+      //foreach ($preguta_usuario as $encuesta) {                     
+             
+            foreach ($preguta_usuario as $index => $encuestado) {
+                if ($encuestado->typ != 'multichoice') {
+                 continue;
+                }
+                //$dato[$index] = $encuestado;
+                //$dato[$index] = $encuestado["encuesta"];
+                if(!isset($dato[$encuestado->encuesta])){
+                    $dato[$encuestado->encuesta] = array();
+                }
+                
+                if(!is_null($dato[$encuestado->encuesta])){
+                    if(!isset($dato[$encuestado->encuesta][$encuestado->pregunta])){
+                        $dato[$encuestado->encuesta][$encuestado->pregunta] = array();
+                    }
+                    
+                    if(!is_null($dato[$encuestado->encuesta][$encuestado->pregunta])){
+                        if(!isset($dato[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value])){
+                            $dato[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value] = 0;
+                        }
+                        
+                        if(!is_null($dato[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value])){
+                            $dato[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value]++;
+                        }
+                    }
+                }
+            }
+      //}
+
+      foreach ($dato as $lla => $valo) {
+        $sheet2->setCellValueByColumnAndRow(2,4, $lla);
+      }      
+
+
+
       $tr_titl = 3; 
       $sheet2->setCellValueByColumnAndRow(1,$tr_titl, 'Etiqueta');
       $sheet2->setCellValueByColumnAndRow(2,$tr_titl, 'Pregunta');
@@ -274,13 +305,7 @@ include_once 'Classes/PHPExcel.php';
       $td_canti = 3;
       $tr_canti_tl = 4;
       $td_canti_tl = 3;
-      foreach ($cant_select as $prg => $canti) {
-         $res_titl = 'Respuesta '.$prg;
-         $sheet2->setCellValueByColumnAndRow($td_canti_tl,$tr_canti_tl, $res_titl);
-         $sheet2->setCellValueByColumnAndRow($td_canti,$tr_canti, $canti);
-         $td_canti_tl++;
-         $td_canti++;
-      }
+      
 
 
       $tr_canti_tl += 2;
