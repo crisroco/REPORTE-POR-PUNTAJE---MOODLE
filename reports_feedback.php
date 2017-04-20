@@ -17,7 +17,7 @@ include_once 'Classes/PHPExcel.php';
          $phpexcel = new PHPExcel();
          $phpexcel->setActiveSheetIndex(0);  
          $objWorkSheet = $phpexcel->getActiveSheet()->setTitle('Reporte por usuario');
-         $sheet2 = $phpexcel->createSheet()->setTitle('reporte grafico');
+         $sheet2 = $phpexcel->createSheet()->setTitle('Reporte porcentaje respuesta marcada');
          foreach(range('A','Z') as $columnID) {
             $objWorkSheet->getColumnDimension($columnID)
                  ->setAutoSize(true);
