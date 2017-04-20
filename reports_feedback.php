@@ -12,11 +12,7 @@ require_login();
 
 $categoryid = required_param('categoryid', PARAM_INT);
 $section_course = required_param('section_course', PARAM_INT);
-
-
- header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-  header('Content-Disposition: attachment;filename="Reporte de encuestas.xlsx"');
-  header('Cache-Control: max-age=0');
+ 
 include_once 'Classes/PHPExcel.php'; 
          $phpexcel = new PHPExcel();
          $phpexcel->setActiveSheetIndex(0);  
@@ -26,6 +22,11 @@ include_once 'Classes/PHPExcel.php';
             $objWorkSheet->getColumnDimension($columnID)
                  ->setAutoSize(true);
             $objWorkSheet->getStyle($columnID)->getFont()->setSize(13);
+         }
+         foreach(range('A','Z') as $columnID) {
+            $sheet2->getColumnDimension($columnID)
+                 ->setAutoSize(true);
+            $sheet2->getStyle($columnID)->getFont()->setSize(13);
          }
 
 
@@ -84,8 +85,9 @@ include_once 'Classes/PHPExcel.php';
    $row_titulos = 2;
    $row_title1 = 1;
 
+   $datos_all = array();
    foreach ($cursos as $key => $value) {  
-
+        $nameCourse = $value->course;
 
       //RETORNA LAS ENCUESTAS VENCIDAS DE UNA SECCION Y CURSO ESPECIFICO 
       $sql_feedback = "SELECT fb.id,  fb.name, fb.course, cs.section as semana , cm.module, c.fullname as crname 
@@ -259,57 +261,70 @@ include_once 'Classes/PHPExcel.php';
       $encuestas[] = $preguta_usuario;
 
       $dato = array();
+      $dato2 = array();
 
       //foreach ($preguta_usuario as $encuesta) {                     
-             
-            foreach ($preguta_usuario as $index => $encuestado) {
+             //veces marcada
+              foreach ($preguta_usuario as $index => $encuestado) {
                 if ($encuestado->typ != 'multichoice') {
                  continue;
                 }
-                //$dato[$index] = $encuestado;
-                //$dato[$index] = $encuestado["encuesta"];
+
                 if(!isset($dato[$encuestado->encuesta])){
                     $dato[$encuestado->encuesta] = array();
+                    
                 }
                 
                 if(!is_null($dato[$encuestado->encuesta])){
                     if(!isset($dato[$encuestado->encuesta][$encuestado->pregunta])){
                         $dato[$encuestado->encuesta][$encuestado->pregunta] = array();
+                        
+
+                        $numAns = explode('|', $encuestado->presentation);
+                        foreach ($numAns as $key => $value) {
+                            $dato[$encuestado->encuesta][$encuestado->pregunta][$key + 1] = 0;
+                            
+                        }
                     }
                     
                     if(!is_null($dato[$encuestado->encuesta][$encuestado->pregunta])){
-                        if(!isset($dato[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value])){
-                            $dato[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value] = 0;
-                        }
+                        $dato[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value]++;
                         
-                        if(!is_null($dato[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value])){
-                            $dato[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value]++;
-                        }
                     }
                 }
             }
       //}
+            //porcentaje
+            foreach ($preguta_usuario as $index => $encuestado) {
+                if ($encuestado->typ != 'multichoice') {
+                 continue;
+                }
 
-      foreach ($dato as $lla => $valo) {
-        $sheet2->setCellValueByColumnAndRow(2,4, $lla);
-      }      
+                if(!isset($dato2[$encuestado->encuesta])){
+                    $dato2[$encuestado->encuesta] = array();
+                }
+                
+                if(!is_null($dato2[$encuestado->encuesta])){
+                    if(!isset($dato2[$encuestado->encuesta][$encuestado->pregunta])){
+                        $dato2[$encuestado->encuesta][$encuestado->pregunta] = array();
+
+                        $numAns = explode('|', $encuestado->presentation);
+                        foreach ($numAns as $key => $value) {
+                            $dato2[$encuestado->encuesta][$encuestado->pregunta][$key + 1] = 0/count($numAns) *100;
+                        }
+                    }
+                    
+                    if(!is_null($dato2[$encuestado->encuesta][$encuestado->pregunta])){
+                        $numAns = explode('|', $encuestado->presentation);
+                        $dato2[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value] = ($dato2[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value]+1)/count($numAns) *100;
+                    }
+                }
+            }               
 
 
+            $datos_all[$nameCourse] = array('dato1' => $dato, 'dato2' => $dato2);
 
-      $tr_titl = 3; 
-      $sheet2->setCellValueByColumnAndRow(1,$tr_titl, 'Etiqueta');
-      $sheet2->setCellValueByColumnAndRow(2,$tr_titl, 'Pregunta');
-      $sheet2->setCellValueByColumnAndRow(3,$tr_titl, 'Respuestas');
-
-      $tr_canti = 5;
-      $td_canti = 3;
-      $tr_canti_tl = 4;
-      $td_canti_tl = 3;
       
-
-
-      $tr_canti_tl += 2;
-      $tr_titl += $nresp*2 + 1;
       //FIN - cantida de veces marcado
      
        if ($actividad != array()) {
@@ -317,12 +332,101 @@ include_once 'Classes/PHPExcel.php';
             array_push($actividades, $actividad);
          //}
        }
-  }      
-//        $sheet2 = $phpexcel->createSheet()->setTitle('reporte grafico');
+  }     
 
+
+
+$tr_curso = 1;
+$tr_encuesta = 2;
+$tr_pregunta = 4;
+$tr_percent = 6;
+foreach ($datos_all as $key => $cursos) {
+   foreach ($cursos as $dat => $enc) {
+      foreach ($enc as $encu => $encuest) {      
+      $sum_tr = sizeof($encuest);
+
+         if ($dat == 'dato1') {
+
+           $sheet2->setCellValueByColumnAndRow(1,$tr_encuesta, $encu);            
+
+           foreach ($encuest as $preg => $pregunt) {
+
+            $sheet2->setCellValueByColumnAndRow(1,$tr_pregunta, $preg);
+            $sheet2->setCellValueByColumnAndRow(1,$tr_pregunta-1, 'PREGUNTA');
+            $sheet2->setCellValueByColumnAndRow(2,$tr_pregunta-1, 'RESPUESTAS');
+            $td_alter = 2;
+            $cont = 1;
+            foreach ($pregunt as $alter => $alternat) {
+               $sheet2->setCellValueByColumnAndRow($td_alter, $tr_pregunta, 'Respuesta '.$cont);
+               $sheet2->setCellValueByColumnAndRow($td_alter,$tr_pregunta+1, $alternat);
+               $td_alter++;
+               $cont++;
+            }
+            $tr_pregunta += $sum_tr +  2;
+
+           }
+            $tr_encuesta = $tr_pregunta + 1;         
+         }
+         if ($dat == 'dato2') {
+            foreach ($encuest as $preg => $pregunt) {
+               $td_percent = 2;
+               foreach ($pregunt as $alter => $alternat) {
+                  $sheet2->setCellValueByColumnAndRow($td_percent,$tr_percent, round($alternat, 2).'%');
+                  $td_percent++;
+               }
+               $tr_percent += $sum_tr +  2;
+            }
+         }
+      }
+     
+    
+   }
+   $sheet2->setCellValueByColumnAndRow(0, $tr_curso, $key);    
+   $tr_curso += $sum_tr + 9;//sumar numero de preguntas mas filas adicionales
+   $tr_pregunta += 3;
+   $tr_percent += 3;
+   //$tr_encuesta += 2;
+}
+
+header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+header('Content-Disposition: attachment;filename="Reporte de encuestas.xlsx"');
+header('Cache-Control: max-age=0');
 $writer = PHPExcel_IOFactory::createWriter($phpexcel, 'Excel2007');
         $writer->setIncludeCharts(TRUE);
         $writer->save('php://output');
+
+
+/*
+
+  foreach ($dato as $encu => $encues) {
+     $sheet2->setCellValueByColumnAndRow(1,2, $encu);
+     foreach ($encues as $preg => $pregunt) {
+         $sheet2->setCellValueByColumnAndRow(2,4, $preg);
+         $tr_preg = 4;
+         $td_alter = 3;
+         $tr_alter = 5;
+         $tr_porcen = 6;
+         
+         foreach ($pregunt as $alter => $alternat) {
+            $sheet2->setCellValueByColumnAndRow($td_alter, $tr_preg, 'Respuesta');
+            $sheet2->setCellValueByColumnAndRow($td_alter,$tr_alter, $alternat);
+            $sheet2->setCellValueByColumnAndRow($td_alter,$tr_porcen, $dato2[$encu][$preg][$alter].'%');
+            $td_alter++;
+         }
+         $tr_preg += 6;
+         $tr_alter += 6;
+         $tr_porcen += 6;
+     }
+   } 
+   $tr_titl = 3; 
+      $sheet2->setCellValueByColumnAndRow(1,$tr_titl, 'Etiqueta');
+      $sheet2->setCellValueByColumnAndRow(2,$tr_titl, 'Pregunta');
+      $sheet2->setCellValueByColumnAndRow(3,$tr_titl, 'Respuestas');
+
+     
+      $tr_titl += $nresp*2 + 1;
+
+*/
 
 
 

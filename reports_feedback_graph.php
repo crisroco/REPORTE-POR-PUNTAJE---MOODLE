@@ -48,9 +48,11 @@
       }
    } 
    $now = microtime(true);
-   foreach ($cursos as $key => $value) {  
+   $datos_all = array();
 
+  foreach ($cursos as $key => $value) {    
 
+    $nameCourse = $value->course;
    //RETORNA LAS ENCUESTAS VENCIDAS DE UNA SECCION Y CURSO ESPECIFICO 
       $sql_feedback = "SELECT fb.id,  fb.name, fb.course, cs.section as semana , cm.module, c.fullname as crname 
                         from {feedback} as fb  
@@ -92,6 +94,7 @@
       $encuestas[] = $preguta_usuario;
 
       $dato = array();
+      $dato2 = array();
 
       //foreach ($preguta_usuario as $encuesta) {                     
              
@@ -99,64 +102,67 @@
                 if ($encuestado->typ != 'multichoice') {
                  continue;
                 }
-                //$dato[$index] = $encuestado;
-                //$dato[$index] = $encuestado["encuesta"];
+
                 if(!isset($dato[$encuestado->encuesta])){
                     $dato[$encuestado->encuesta] = array();
+                    
                 }
                 
                 if(!is_null($dato[$encuestado->encuesta])){
-                    if(!$dato[$encuestado->encuesta][$encuestado->pregunta]){
+                    if(!isset($dato[$encuestado->encuesta][$encuestado->pregunta])){
                         $dato[$encuestado->encuesta][$encuestado->pregunta] = array();
+                        
+
+                        $numAns = explode('|', $encuestado->presentation);
+                        foreach ($numAns as $key => $value) {
+                            $dato[$encuestado->encuesta][$encuestado->pregunta][$key + 1] = 0;
+                            $dato[$encuestado->encuesta][$encuestado->pregunta][$key + 1];
+                            
+                        }
                     }
                     
                     if(!is_null($dato[$encuestado->encuesta][$encuestado->pregunta])){
-                        if(!$dato[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value]){
-                            $dato[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value] = 0;
-                        }
+                        $numAns = explode('|', $encuestado->presentation);
+                        $dato[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value]++;
                         
-                        if(!is_null($dato[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value])){
-                            $dato[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value]++;
-                        }
                     }
                 }
             }
-      //}
+      //}   
+            /*echo "<pre>";
+                    print_r($preguta_usuario);
+                    echo "</pre>";*/
+            foreach ($preguta_usuario as $index => $encuestado) {
+                if ($encuestado->typ != 'multichoice') {
+                 continue;
+                }
+
+                if(!isset($dato2[$encuestado->encuesta])){
+                    $dato2[$encuestado->encuesta] = array();
+                }
+                
+                if(!is_null($dato2[$encuestado->encuesta])){
+                    if(!isset($dato2[$encuestado->encuesta][$encuestado->pregunta])){
+                        $dato2[$encuestado->encuesta][$encuestado->pregunta] = array();
+
+                        $numAns = explode('|', $encuestado->presentation);
+                        foreach ($numAns as $key => $value) {
+                            $dato2[$encuestado->encuesta][$encuestado->pregunta][$key + 1] = 0/count($numAns) *100;
+                        }
+                    }
+                    
+                    if(!is_null($dato2[$encuestado->encuesta][$encuestado->pregunta])){
+                        $numAns = explode('|', $encuestado->presentation);
+                        $dato2[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value] = ($dato2[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value]+1)/count($numAns) *100;
+                    }
+                }
+            }
+
+         $datos_all[$nameCourse] = array('dato1' => $dato, 'dato2' => $dato2);
+     
+  }
 
 
-        
-      echo "**<pre>";
-        print_r($dato);
-        echo "</pre>##";
-      /*echo "<pre>";
-      print_r($preguta_usuario);
-      echo "</pre>";*/
-      /*foreach ($preguta_usuario as $ky => $val) {
-         if ($val->typ != 'multichoice') {
-               continue;
-         }
-      }*/
-          
-      /*//cantida de veces marcado
-      $respuestas = array();
-      foreach ($preguta_usuario as $ky => $val) {
-         if ($val->typ != 'multichoice') {
-            continue;
-         }
-         $nresp = count(explode('|',$val->presentation));
-         array_push($respuestas, $val->value);
-         
-      }  
-      $cant_select = array_count_values($respuestas);
-
-      for ($i=1; $i <= $nresp; $i++) { 
-          if (isset($cant_select[$i])) {
-             continue;
-          }else{
-            $cant_select[$i] = 0;
-          }
-      }   
-      ksort($cant_select); */
-   }
-
-
+echo "<pre>";
+                    print_r($datos_all);
+                    echo "</pre>";
