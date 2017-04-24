@@ -24,7 +24,7 @@ class reportpoints_form extends moodleform {
 
 
         $semana = array('Seleccionar');
-        $nsemana = 10;
+        $nsemana = 14;
         for ($i=1; $i <= $nsemana; $i++) { 
             $nomsemana  = 'Semana '. $i;
             array_push($semana, $nomsemana);
