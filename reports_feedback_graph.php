@@ -1,20 +1,27 @@
-<?php // content="text/plain; charset=utf-8"
+<?php
 
-   require_once(dirname(__FILE__) . '/../../config.php');
-   require_once($CFG->libdir.'/adminlib.php');
-   require_once($CFG->libdir.'/modinfolib.php');
-   require_once($CFG->libdir.'/formslib.php');
+require_once(dirname(__FILE__) . '/../../config.php');
+require_once($CFG->libdir.'/adminlib.php');
+require_once($CFG->libdir.'/modinfolib.php');
+require_once($CFG->libdir.'/formslib.php');
 
-   global $DB, $CFG, $PAGE, $OUTPUT, $USER;
+global $DB, $CFG, $PAGE, $OUTPUT, $USER;
 
-   require_login();
+require_login();
 
-   $categoryid = required_param('categoryid', PARAM_INT);
-   $section_course = required_param('section_course', PARAM_INT);
+$categoryid = required_param('categoryid', PARAM_INT);
+$section_course = required_param('section_course', PARAM_INT);
+ 
 
+
+
+
+   /**
+   RETORNA LOS CURSOS DE LA CATEGORIA ELEGIDA Y CANTIDAD DE ALUMNOS MATRICULADOS
+*/
    $categoria = array();
 
-  $sql_cursos = "SELECT course.id as Course_id,course.fullname AS Course
+   $sql_cursos = "SELECT course.id as Course_id,course.fullname AS Course
    ,context.id AS Context
    , COUNT(course.id) AS Students
    ,category.name
@@ -31,8 +38,7 @@
 
    $cursos = $DB->get_records_sql($sql_cursos);
 
-
-    if ($cursos == array()) {
+   if ($cursos == array()) {
       //echo 'Verifique la categoria seleccionda';
       die();
    }else{
@@ -46,14 +52,19 @@
       if ($cursos == array()) {
          die();
       }
-   } 
+   }   
+
+   
+     // REPORTE DE CURSO
+   
    $now = microtime(true);
+   $actividades = array();
+
    $datos_all = array();
+   foreach ($cursos as $key => $value) {  
+        $nameCourse = $value->course;
 
-  foreach ($cursos as $key => $value) {    
-
-    $nameCourse = $value->course;
-   //RETORNA LAS ENCUESTAS VENCIDAS DE UNA SECCION Y CURSO ESPECIFICO 
+      //RETORNA LAS ENCUESTAS VENCIDAS DE UNA SECCION Y CURSO ESPECIFICO 
       $sql_feedback = "SELECT fb.id,  fb.name, fb.course, cs.section as semana , cm.module, c.fullname as crname 
                         from {feedback} as fb  
                         join {course_modules} as cm ON fb.id = cm.instance
@@ -65,40 +76,56 @@
 
 
       //PROCESAR CADA ENCUESTA
-
-       
       
-      foreach ($actividad as $ke => $valu) {
-            
-            $mdid = $valu->id;
-            $title1 = $valu->crname . ' - Semana ' . $section_course;
+      //if ($actividad != array()) {       
+      
+        foreach ($actividad as $ke => $valu) {
+           
+           $mdid = $valu->id;     
+
+
+           //RETORNA LOS USUARIOS QUE REALIZARON LA ENCUESTA Y RESPUESTAS QUE MARCARON 
+           $sql = "SELECT fv.id, fc.userid, f.timemodified, u.firstname, c.fullname, u.lastname, u.username, fi.presentation, fv.value, fi.typ,f.name as encuesta, fi.name as pregunta, fi.id as pregunta_id
+              FROM {user} u
+              INNER JOIN {feedback_completed} fc ON fc.userid = u.id
+              INNER JOIN {feedback} f ON f.id = fc.feedback
+              INNER JOIN {course} c ON f.course = c.id 
+              INNER JOIN {feedback_value} fv ON  fc.id = fv.completed
+              INNER JOIN {feedback_item} fi ON  fi.id = fv.item
+              WHERE f.id IN (?)                      
+              ORDER BY fc.userid ASC";
+
+              $preguta_usuario = $DB->get_records_sql($sql, array($mdid));
+          
 
 
 
-         //RETORNA LOS USUARIOS QUE REALIZARON LA ENCUESTA Y RESPUESTAS QUE MARCARON 
-         $sql = "SELECT fv.id, fc.userid, f.course as cursoID,f.timemodified, u.firstname, c.fullname, u.lastname, u.username, fi.presentation, fv.value, fi.typ,f.name as encuesta, fi.name as pregunta, fi.id as pregunta_id
-            FROM {user} u
-            INNER JOIN {feedback_completed} fc ON fc.userid = u.id
-            INNER JOIN {feedback} f ON f.id = fc.feedback
-            INNER JOIN {course} c ON f.course = c.id 
-            INNER JOIN {feedback_value} fv ON  fc.id = fv.completed
-            INNER JOIN {feedback_item} fi ON  fi.id = fv.item
-            WHERE f.id IN (?)                      
-            ORDER BY fc.userid ASC";
+        }
+      //}
 
-            $preguta_usuario = $DB->get_records_sql($sql, array($mdid));
 
-      }      
-      //echo json_encode($cursos);
+      //HOJA 2 REPORTE
+      //cantida de veces marcado
+      $respuestas = array();
+      foreach ($preguta_usuario as $ky => $val) {
+         if ($val->typ != 'multichoice') {
+            continue;
+         }
+         $nresp = count(explode('|',$val->presentation));
+         array_push($respuestas, $val->value);
+         
+      }  
+
       $encuestas = array();
       $encuestas[] = $preguta_usuario;
 
       $dato = array();
       $dato2 = array();
+      $nresptemp = array();
 
       //foreach ($preguta_usuario as $encuesta) {                     
-             
-            foreach ($preguta_usuario as $index => $encuestado) {
+             //veces marcada
+              foreach ($preguta_usuario as $index => $encuestado) {
                 if ($encuestado->typ != 'multichoice') {
                  continue;
                 }
@@ -116,53 +143,133 @@
                         $numAns = explode('|', $encuestado->presentation);
                         foreach ($numAns as $key => $value) {
                             $dato[$encuestado->encuesta][$encuestado->pregunta][$key + 1] = 0;
-                            $dato[$encuestado->encuesta][$encuestado->pregunta][$key + 1];
                             
                         }
                     }
                     
                     if(!is_null($dato[$encuestado->encuesta][$encuestado->pregunta])){
-                        $numAns = explode('|', $encuestado->presentation);
                         $dato[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value]++;
                         
                     }
                 }
-            }
-      //}   
-            /*echo "<pre>";
-                    print_r($preguta_usuario);
-                    echo "</pre>";*/
-            foreach ($preguta_usuario as $index => $encuestado) {
-                if ($encuestado->typ != 'multichoice') {
-                 continue;
-                }
+                $nResp = count(explode('|', $encuestado->presentation));
+              }
+        //}   
+            //porcentaje
 
-                if(!isset($dato2[$encuestado->encuesta])){
-                    $dato2[$encuestado->encuesta] = array();
-                }
-                
-                if(!is_null($dato2[$encuestado->encuesta])){
-                    if(!isset($dato2[$encuestado->encuesta][$encuestado->pregunta])){
-                        $dato2[$encuestado->encuesta][$encuestado->pregunta] = array();
+            foreach ($dato as $dt => $datos) {               
+                foreach ($datos as $enc => $encu) {
+                  foreach ($encu as $ans => $answer) {
+                     $nresptemp[$dt][$enc]['cantidad'] += $answer;
+                     
+                  }
+                      
+                }   
+             }
 
-                        $numAns = explode('|', $encuestado->presentation);
-                        foreach ($numAns as $key => $value) {
-                            $dato2[$encuestado->encuesta][$encuestado->pregunta][$key + 1] = 0/count($numAns) *100;
-                        }
-                    }
-                    
-                    if(!is_null($dato2[$encuestado->encuesta][$encuestado->pregunta])){
-                        $numAns = explode('|', $encuestado->presentation);
-                        $dato2[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value] = ($dato2[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value]+1)/count($numAns) *100;
-                    }
-                }
-            }
+             foreach ($dato as $dt => $datos) {               
+                foreach ($datos as $enc => $encu) {
+                  foreach ($encu as $ans => $answer) {
+                     $dato2[$dt][$enc][$ans] = round(($answer/$nresptemp[$dt][$enc]['cantidad'] )*100,2);
+                     
+                  }
+                      
+                }   
+             }               
 
-         $datos_all[$nameCourse] = array('dato1' => $dato, 'dato2' => $dato2);
+            if ($dato != array() || $dato2 != array()) {
+                # code...
+               $datos_all[$nameCourse] = array('dato1' => $dato, 'dato2' => $dato2);
+             } 
+
+      
+      //FIN - cantida de veces marcado
      
+       if ($actividad != array()) {
+         //foreach ($actividad as $llave => $valor) {
+            array_push($actividades, $actividad);
+         //}
+       }
+  }     
+
+echo "<script src='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js'></script>";
+echo "<link rel='stylesheet' type='text/css' href='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css'>";
+echo "<link rel='stylesheet' type='text/css' href='assets/style.css'>";
+$html = '';
+foreach ($datos_all as $key => $cursos) {
+  $html .= '<div class="course">';
+    $html .= '<h3 class="coursetitle">';
+      $html .= $key;
+    $html .= '</h3>';  
+  foreach ($cursos as $dat => $enc) {
+
+    foreach ($enc as $encu => $encuest) {      
+      $html .= '<div class="encuesta">';
+      if ($dat == 'dato1') {
+        $html .= '<h4 class="encuestatitle">';
+          $html .= $encu;
+        $html .= '</h4>';
+        foreach ($encuest as $preg => $pregunt) {
+          $html .= '<div class="pregunta">';
+            $html .='<p class="preguntatitle"/>'; 
+              $html .= $preg;
+          foreach ($pregunt as $alter => $alternat) {
+            $percent = $cursos['dato2'][$encu][$preg][$alter];
+
+                $html .= '<div class="alternativa">';
+                  $html .= '<div class="alttitle">';
+                    $html .= 'Alternativa '.$alter;
+                  $html .= '</div>';
+                  $html .= '<div class="cantpercent">';
+                    $html .= '<div class="altcant">';
+                      $html .= '<p class="vecestitle">';
+                      $html .= 'Veces marcado </p>';
+                      $html .= $alternat;
+                    $html .= '</div>';
+                    $html .= '<div class="altpercent">';
+                      $html .= '<p class="vecestitle">';
+                      $html .= 'Porcentaje </p>';
+                      $html .= '<div class="progress">
+                        <div class="progress-bar progress-bar-success progress-bar-striped" role="progressbar"
+                        aria-valuenow="'.$percent.'" aria-valuemin="0" aria-valuemax="100" style="width:'.$percent.'%">
+                          '.$percent.'% Marcados
+                        </div>
+                      </div>';
+                      //$html .= $percent;
+                    $html .= '</div>';
+                  $html .= '</div>';
+                $html .= '</div>';
+
+          }
+            
+          $html .= '</div>';
+        }
+
+      }
+
+      if ($dat == 'dato2') {
+        foreach ($encuest as $preg => $pregunt) {
+
+          foreach ($pregunt as $alter => $alternat) {
+
+          }
+
+        }
+      }
+      $html .= '</div>';
+
+    }
+
+
   }
+  $html .= '</div>';
+}    
+
+echo $html;
 
 
-echo "<pre>";
-                    print_r($datos_all);
-                    echo "</pre>";
+
+
+
+
+

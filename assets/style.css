@@ -1,5 +1,61 @@
+.course {
+    max-width: 1000px;
+    margin: auto;
+    color: rgb(58, 58, 58);
+}
+
 .linkreprote {
     text-align: right;
 }
 
+.progress-bar-success {
+    background-color: #00acdf;
+}
 
+.progress{
+	background-color: #d0fcff;
+}
+
+.coursetitle {
+    color: #00acdf;
+    margin: 10px 20px;
+    font-weight: 600;
+}
+
+.encuesta {
+    margin: 10px 20px;
+}
+
+.pregunta {
+    margin: 10px 20px;
+}
+
+.alternativa {
+    margin: 15px;
+    padding: 10px 20px;
+    border: 1px solid;
+}
+
+.cantpercent{
+	display: flex;
+}
+
+.alttitle {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+p.preguntatitle {
+    font-size: 18px;
+    font-weight: 600;
+    color: #000;
+}
+
+.altcant, .altpercent{
+	width: 50%;
+}
+
+.altcant{
+	margin-right: 15px;
+    border-right: 2px solid rgb(58, 58, 58);
+}
