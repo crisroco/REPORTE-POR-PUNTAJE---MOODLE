@@ -24,7 +24,7 @@ class reportpoints_form extends moodleform {
 
 
         $semana = array('Seleccionar');
-        $nsemana = 10;
+        $nsemana = 14;
         for ($i=1; $i <= $nsemana; $i++) { 
             $nomsemana  = 'Semana '. $i;
             array_push($semana, $nomsemana);
@@ -36,7 +36,7 @@ class reportpoints_form extends moodleform {
 
         $mform->addElement('select', 'section_course', get_string('section_course','report_reportpoints'), $semana);
 
-        $this->add_action_buttons(false, 'Exportar reporte');
+        $this->add_action_buttons(false, 'Reporte Gráfico');
 
     }
 

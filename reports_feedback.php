@@ -16,17 +16,22 @@ $section_course = required_param('section_course', PARAM_INT);
 include_once 'Classes/PHPExcel.php'; 
          $phpexcel = new PHPExcel();
          $phpexcel->setActiveSheetIndex(0);  
-         $objWorkSheet = $phpexcel->getActiveSheet()->setTitle('Reporte por usuario');
-         $sheet2 = $phpexcel->createSheet()->setTitle('Reporte repuesta marcada');
-         foreach(range('A','Z') as $columnID) {
-            $objWorkSheet->getColumnDimension($columnID)
+         $sheet2 = $phpexcel->getActiveSheet()->setTitle('Reporte repuesta marcada');
+
+         ////$objWorkSheet = $phpexcel->createSheet()->setTitle('Reporte por usuario');
+         /*foreach(range('A','Z') as $columnID) {
+            //$objWorkSheet->getColumnDimension($columnID)
                  ->setAutoSize(true);
-            $objWorkSheet->getStyle($columnID)->getFont()->setSize(13);
-         }
+            //$objWorkSheet->getStyle($columnID)->getFont()->setSize(13);
+         }*/
          foreach(range('A','Z') as $columnID) {
             $sheet2->getColumnDimension($columnID)
                  ->setAutoSize(true);
             $sheet2->getStyle($columnID)->getFont()->setSize(13);
+
+         }
+         foreach(range('C','Z') as $columnID) {            
+            $sheet2->getStyle($columnID)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
          }
 
 
@@ -68,16 +73,13 @@ include_once 'Classes/PHPExcel.php';
          die();
       }
    }   
-   /*echo "<pre>";
-      print_r($cursos);
-   echo "</pre>";*/
 
 
 
 
-   /**
-      REPORTE DE CURSO
-   */
+   
+     // REPORTE DE CURSO
+   
    $now = microtime(true);
    $actividades = array();
    $row_alumnos = 3;
@@ -103,142 +105,144 @@ include_once 'Classes/PHPExcel.php';
       $titulos = array('NOMBRE', 'APELLIDO');
       $td_titulos = 0;
       foreach ($titulos as $tid => $titu) {
-         $objWorkSheet->setCellValueByColumnAndRow($td_titulos,$row_titulos, $titu);
-         $objWorkSheet->getRowDimension($row_titulos)->setRowHeight(30);
+         //$objWorkSheet->setCellValueByColumnAndRow($td_titulos,$row_titulos, $titu);
+         //$objWorkSheet->getRowDimension($row_titulos)->setRowHeight(30);
          foreach(range('A','Z') as $columnID) {
            
-            $objWorkSheet->getStyle($columnID.$row_titulos)->getFont()->setBold(true);
+            //$objWorkSheet->getStyle($columnID.$row_titulos)->getFont()->setBold(true);
          }
          $td_titulos++;
       }
 
 
       //PROCESAR CADA ENCUESTA
-      foreach ($actividad as $ke => $valu) {
-         
-         $mdid = $valu->id;
-         $title1 = $valu->crname . ' - Semana ' . $section_course;
+      
+      //if ($actividad != array()) {       
+      
+        foreach ($actividad as $ke => $valu) {
+           
+           $mdid = $valu->id;
+           $title1 = $valu->crname . ' - Semana ' . $section_course;
 
-         $objWorkSheet->getStyle('A'.$row_title1)->applyFromArray(
-           array(
-               'fill' => array(
-                   'type' => PHPExcel_Style_Fill::FILL_SOLID,
-                   'color' => array('rgb' => '3f8cce')
-               )
-           )
-         ); 
-         $objWorkSheet->getRowDimension($row_title1)->setRowHeight(30);
-         $objWorkSheet->setCellValueByColumnAndRow(0,$row_title1, $title1);
-
-
-         //RETORNA LOS USUARIOS QUE REALIZARON LA ENCUESTA Y RESPUESTAS QUE MARCARON 
-         $sql = "SELECT fv.id, fc.userid, f.timemodified, u.firstname, c.fullname, u.lastname, u.username, fi.presentation, fv.value, fi.typ,f.name as encuesta, fi.name as pregunta, fi.id as pregunta_id
-            FROM {user} u
-            INNER JOIN {feedback_completed} fc ON fc.userid = u.id
-            INNER JOIN {feedback} f ON f.id = fc.feedback
-            INNER JOIN {course} c ON f.course = c.id 
-            INNER JOIN {feedback_value} fv ON  fc.id = fv.completed
-            INNER JOIN {feedback_item} fi ON  fi.id = fv.item
-            WHERE f.id IN (?)                      
-            ORDER BY fc.userid ASC";
-
-            $preguta_usuario = $DB->get_records_sql($sql, array($mdid));
-         /*echo "<pre>";
-         print_r($preguta_usuario);
-         echo "</pre>"; */ 
+           //$objWorkSheet->getStyle('A'.$row_title1)->applyFromArray(
+            /* array(
+                 'fill' => array(
+                     'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                     'color' => array('rgb' => '3f8cce')
+                 )
+             )
+           ); */
+           //$objWorkSheet->getRowDimension($row_title1)->setRowHeight(30);
+           //$objWorkSheet->setCellValueByColumnAndRow(0,$row_title1, $title1);
 
 
+           //RETORNA LOS USUARIOS QUE REALIZARON LA ENCUESTA Y RESPUESTAS QUE MARCARON 
+           $sql = "SELECT fv.id, fc.userid, f.timemodified, u.firstname, c.fullname, u.lastname, u.username, fi.presentation, fv.value, fi.typ,f.name as encuesta, fi.name as pregunta, fi.id as pregunta_id
+              FROM {user} u
+              INNER JOIN {feedback_completed} fc ON fc.userid = u.id
+              INNER JOIN {feedback} f ON f.id = fc.feedback
+              INNER JOIN {course} c ON f.course = c.id 
+              INNER JOIN {feedback_value} fv ON  fc.id = fv.completed
+              INNER JOIN {feedback_item} fi ON  fi.id = fv.item
+              WHERE f.id IN (?)                      
+              ORDER BY fc.userid ASC";
 
-         // PROCESAR CADA PREGUNTADE CADA ENCUESTA
-            
-            $keytemp = '';
-            $colum_respuestas = 2;
-            $colum_respuestas_temp = $colum_respuestas; 
-
-            $cont_temp = 1; 
-            foreach ($preguta_usuario as $qid => $qstn) {
-
-               
-               
-                //IMPRIMIR SATOS DEL ALUMNO  
-                $colum_alumno = 0;
-                foreach ($qstn as $k => $v) {
-                    if ($k == 'value' || $k == 'presentation' || $k == 'typ' || $k == 'encuesta' || $k == 'pregunta' || $k == 'username' || $k == 'id' || $k == 'userid' || $k == 'timemodified'|| $k == 'fullname'|| $k == 'cursoID'|| $k == 'pregunta_id') {
-                        continue;
-                    }
-                    if ( $qstn->userid  != $keytemp) {  
-
-                        
-                        $objWorkSheet->setCellValueByColumnAndRow($colum_alumno,$row_alumnos, $v);
-                        $colum_alumno++;
-                        
-
-                    }else{
-                        continue;
-                    } 
-                }
+              $preguta_usuario = $DB->get_records_sql($sql, array($mdid));
+          
 
 
-                   //VALIDAR VALOR DE LA RESPUESTA TIPO MULTICOISE 
-                  if ($qstn->typ == 'multichoice') {
-                     $resp=explode('|', $qstn->presentation);
-                     $valor = $resp[$qstn->value -1];
 
-                     if (strpos($valor,">>>>>")>0){
-                           $valor=substr($valor, 1);
-                     }  
-                           $valor = mberegi_replace("[\n|\r|\n\r|\t||\x0B|>>>>>|<<<<<|####]", "",$valor);
-                    
-                        $valor = $valor;
+           // PROCESAR CADA PREGUNTADE CADA ENCUESTA
+              
+              $keytemp = '';
+              $colum_respuestas = 2;
+              $colum_respuestas_temp = $colum_respuestas; 
+
+              $cont_temp = 1; 
+
+              foreach ($preguta_usuario as $qid => $qstn) {
+
+                 
+                 
+                  //IMPRIMIR SATOS DEL ALUMNO  
+                  $colum_alumno = 0;
+                  foreach ($qstn as $k => $v) {
+                      if ($k == 'value' || $k == 'presentation' || $k == 'typ' || $k == 'encuesta' || $k == 'pregunta' || $k == 'username' || $k == 'id' || $k == 'userid' || $k == 'timemodified'|| $k == 'fullname'|| $k == 'cursoID'|| $k == 'pregunta_id') {
+                          continue;
+                      }
+                      if ( $qstn->userid  != $keytemp) {  
+
+                          
+                          //$objWorkSheet->setCellValueByColumnAndRow($colum_alumno,$row_alumnos, $v);
+                          $colum_alumno++;
+                          
+
+                      }else{
+                          continue;
+                      } 
                   }
 
 
-                //IMPRIMIR RESPUESTAS DEL ALUMNO
-                 foreach ($qstn as $ky => $vl) {
-                   
-                    if ($ky == 'firstname' || $ky == 'lastname' || $ky == 'presentation' || $ky == 'typ' || $ky == 'encuesta' || $ky == 'pregunta' || $ky == 'username' || $ky == 'id' || $ky == 'userid' || $ky == 'timemodified'|| $ky == 'fullname' || $k == 'cursoID'|| $k == 'pregunta_id') {
-                        continue;
-                    }
-                    if ( $qstn->userid  == $keytemp) {  
-                        $question_n = 'Pregunta ' .$cont_temp; 
-                        $objWorkSheet->setCellValueByColumnAndRow($colum_respuestas,$row_titulos, $question_n);
-
-                        
-                        if ($qstn->typ == 'multichoice'){
-                           $objWorkSheet->setCellValueByColumnAndRow($colum_respuestas,$row_respuestas, $valor);
-                              $colum_respuestas++;
-                        }else{
-                           $objWorkSheet->setCellValueByColumnAndRow($colum_respuestas,$row_respuestas, $vl);
-                           $colum_respuestas++;
-                        }
-                        
-
-                    }else{
-                        $question_n = 'Pregunta ' .$cont_temp; 
-                        $row_respuestas++;
-                        $colum_respuestas = $colum_respuestas_temp;
-                        $objWorkSheet->setCellValueByColumnAndRow($colum_respuestas,$row_titulos, $question_n);
-
-                         if ($qstn->typ == 'multichoice'){
-                           $objWorkSheet->setCellValueByColumnAndRow($colum_respuestas,$row_respuestas, $valor);
-                              $colum_respuestas++;
-                        }else{
-                           $objWorkSheet->setCellValueByColumnAndRow($colum_respuestas,$row_respuestas, $vl);
-                           $colum_respuestas++;
-                        }
-                        
-
+                     //VALIDAR VALOR DE LA RESPUESTA TIPO MULTICOISE 
+                    if ($qstn->typ == 'multichoice') {
+                       $resp=explode('|', $qstn->presentation);
+                       $valor = $resp[$qstn->value -1];
+                       if (strpos($valor,">>>>>")>0){
+                             $valor=substr($valor, 1);
+                       }  
+                             $valor = mberegi_replace("[\n|\r|\n\r|\t||\x0B|>>>>>|<<<<<|####]", "",$valor);
+                      
+                          
                     } 
-                }
 
-                if ($qstn->userid != $keytemp) {
-                    $row_alumnos++;
-                }
 
-                $keytemp = $qstn->userid;
-                $cont_temp++;
-            }
-      }
+                  //IMPRIMIR RESPUESTAS DEL ALUMNO
+                   foreach ($qstn as $ky => $vl) {
+                     
+                      if ($ky == 'firstname' || $ky == 'lastname' || $ky == 'presentation' || $ky == 'typ' || $ky == 'encuesta' || $ky == 'pregunta' || $ky == 'username' || $ky == 'id' || $ky == 'userid' || $ky == 'timemodified'|| $ky == 'fullname' || $k == 'cursoID'|| $k == 'pregunta_id') {
+                          continue;
+                      }
+                      if ( $qstn->userid  == $keytemp) {  
+                          $question_n = 'Pregunta ' .$cont_temp; 
+                          //$objWorkSheet->setCellValueByColumnAndRow($colum_respuestas,$row_titulos, $question_n);
+
+                          
+                          if ($qstn->typ == 'multichoice'){
+                             //$objWorkSheet->setCellValueByColumnAndRow($colum_respuestas,$row_respuestas, $valor);
+                                $colum_respuestas++;
+                          }else{
+                             //$objWorkSheet->setCellValueByColumnAndRow($colum_respuestas,$row_respuestas, $vl);
+                             $colum_respuestas++;
+                          }
+                          
+
+                      }else{
+                          $question_n = 'Pregunta ' .$cont_temp; 
+                          $row_respuestas++;
+                          $colum_respuestas = $colum_respuestas_temp;
+                          //$objWorkSheet->setCellValueByColumnAndRow($colum_respuestas,$row_titulos, $question_n);
+
+                           if ($qstn->typ == 'multichoice'){
+                             //$objWorkSheet->setCellValueByColumnAndRow($colum_respuestas,$row_respuestas, $valor);
+                                $colum_respuestas++;
+                          }else{
+                             //$objWorkSheet->setCellValueByColumnAndRow($colum_respuestas,$row_respuestas, $vl);
+                             $colum_respuestas++;
+                          }
+                          
+
+                      } 
+                  }
+
+                  if ($qstn->userid != $keytemp) {
+                      $row_alumnos++;
+                  }
+
+                  $keytemp = $qstn->userid;
+                  $cont_temp++;
+              }
+        }
+      //}
 
       $row_alumnos += 4;
       $row_respuestas += 4;
@@ -262,6 +266,7 @@ include_once 'Classes/PHPExcel.php';
 
       $dato = array();
       $dato2 = array();
+      $nresptemp = array();
 
       //foreach ($preguta_usuario as $encuesta) {                     
              //veces marcada
@@ -292,37 +297,35 @@ include_once 'Classes/PHPExcel.php';
                         
                     }
                 }
-            }
-      //}
+                $nResp = count(explode('|', $encuestado->presentation));
+              }
+        //}   
             //porcentaje
-            foreach ($preguta_usuario as $index => $encuestado) {
-                if ($encuestado->typ != 'multichoice') {
-                 continue;
-                }
 
-                if(!isset($dato2[$encuestado->encuesta])){
-                    $dato2[$encuestado->encuesta] = array();
-                }
-                
-                if(!is_null($dato2[$encuestado->encuesta])){
-                    if(!isset($dato2[$encuestado->encuesta][$encuestado->pregunta])){
-                        $dato2[$encuestado->encuesta][$encuestado->pregunta] = array();
+            foreach ($dato as $dt => $datos) {               
+                foreach ($datos as $enc => $encu) {
+                  foreach ($encu as $ans => $answer) {
+                     $nresptemp[$dt][$enc]['cantidad'] += $answer;
+                     
+                  }
+                      
+                }   
+             }
 
-                        $numAns = explode('|', $encuestado->presentation);
-                        foreach ($numAns as $key => $value) {
-                            $dato2[$encuestado->encuesta][$encuestado->pregunta][$key + 1] = 0/count($numAns) *100;
-                        }
-                    }
-                    
-                    if(!is_null($dato2[$encuestado->encuesta][$encuestado->pregunta])){
-                        $numAns = explode('|', $encuestado->presentation);
-                        $dato2[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value] = ($dato2[$encuestado->encuesta][$encuestado->pregunta][$encuestado->value]+1)/count($numAns) *100;
-                    }
-                }
-            }               
+             foreach ($dato as $dt => $datos) {               
+                foreach ($datos as $enc => $encu) {
+                  foreach ($encu as $ans => $answer) {
+                     $dato2[$dt][$enc][$ans] = round(($answer/$nresptemp[$dt][$enc]['cantidad'] )*100,2);
+                     
+                  }
+                      
+                }   
+             }               
 
-
-            $datos_all[$nameCourse] = array('dato1' => $dato, 'dato2' => $dato2);
+            if ($dato != array() || $dato2 != array()) {
+                # code...
+               $datos_all[$nameCourse] = array('dato1' => $dato, 'dato2' => $dato2);
+             } 
 
       
       //FIN - cantida de veces marcado
@@ -334,36 +337,80 @@ include_once 'Classes/PHPExcel.php';
        }
   }     
 
-
+/*echo "<pre>";
+  print_r($datos_all);
+echo "</pre>";*/
 
 $tr_curso = 1;
 $tr_encuesta = 2;
 $tr_pregunta = 4;
 $tr_percent = 6;
 foreach ($datos_all as $key => $cursos) {
+   $crutr = $tr_encuesta-1;
+   $sheet2->getStyle('A'.$crutr.':B'.$crutr)->applyFromArray(
+     array(
+         'fill' => array(
+             'type' => PHPExcel_Style_Fill::FILL_SOLID,
+             'color' => array('rgb' => '3f8cce')
+         )
+     )
+   ); 
+
+   $sheet2->setCellValueByColumnAndRow(1, $tr_encuesta-1, $key); 
    foreach ($cursos as $dat => $enc) {
       foreach ($enc as $encu => $encuest) {      
       $sum_tr = sizeof($encuest);
 
          if ($dat == 'dato1') {
-
+           $sheet2->getStyle('A'.$tr_encuesta.':B'.$tr_encuesta)->applyFromArray(
+              array(
+                  'fill' => array(
+                      'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                      'color' => array('rgb' => '9ac2e5')
+                  )
+              )
+            );    
            $sheet2->setCellValueByColumnAndRow(1,$tr_encuesta, $encu);            
-
+           $pregcont = 1;
            foreach ($encuest as $preg => $pregunt) {
 
-            $sheet2->setCellValueByColumnAndRow(1,$tr_pregunta, $preg);
-            $sheet2->setCellValueByColumnAndRow(1,$tr_pregunta-1, 'PREGUNTA');
+            $sheet2->setCellValueByColumnAndRow(1,$tr_pregunta-1, 'PREGUNTA'.$pregcont);
             $sheet2->setCellValueByColumnAndRow(2,$tr_pregunta-1, 'RESPUESTAS');
+            $sheet2->setCellValueByColumnAndRow(1,$tr_pregunta, $preg);
+            $tr_trmp1 = $tr_pregunta+1;
+            $tr_trmp2 = $tr_pregunta+2;
+            $sheet2->getStyle('A'.$tr_trmp1.':B'.$tr_trmp2)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+
+            $sheet2->setCellValueByColumnAndRow(1,$tr_pregunta+1, 'Veces marcada');
+            $sheet2->setCellValueByColumnAndRow(1,$tr_pregunta+2, 'Porcentaje');
             $td_alter = 2;
             $cont = 1;
             foreach ($pregunt as $alter => $alternat) {
+               $tr_temp3 = $tr_pregunta+1;
+               $tr_temp4 = $tr_pregunta+2;
                $sheet2->setCellValueByColumnAndRow($td_alter, $tr_pregunta, 'Respuesta '.$cont);
+               $borderr = array(
+                 'borders' => array(
+                   'allborders' => array(
+                     'style' => PHPExcel_Style_Border::BORDER_THIN
+                   )
+                 )
+               );
+               $sheet2->getStyle('C'.$tr_temp3.':G'.$tr_temp4)->applyFromArray($borderr);
+               $sheet2->getStyle('C'.$tr_temp3.':G'.$tr_temp4)->applyFromArray(
+                 array(
+                     'fill' => array(
+                         'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                         'color' => array('rgb' => 'd6e8f5')
+                     )
+                 )
+               );
                $sheet2->setCellValueByColumnAndRow($td_alter,$tr_pregunta+1, $alternat);
                $td_alter++;
                $cont++;
             }
-            $tr_pregunta += $sum_tr +  2;
-
+            $tr_pregunta += 6;
+            $pregcont++;
            }
             $tr_encuesta = $tr_pregunta + 1;         
          }
@@ -374,14 +421,14 @@ foreach ($datos_all as $key => $cursos) {
                   $sheet2->setCellValueByColumnAndRow($td_percent,$tr_percent, round($alternat, 2).'%');
                   $td_percent++;
                }
-               $tr_percent += $sum_tr +  2;
+               $tr_percent += 6;
             }
          }
       }
      
     
    }
-   $sheet2->setCellValueByColumnAndRow(0, $tr_curso, $key);    
+      
    $tr_curso += $sum_tr + 9;//sumar numero de preguntas mas filas adicionales
    $tr_pregunta += 3;
    $tr_percent += 3;
