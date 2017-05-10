@@ -42,9 +42,7 @@ $section_course = required_param('section_course', PARAM_INT);
    echo $sql_cursos;
 
    $cursos = $DB->get_records_sql($sql_cursos);
-   echo "<pre>";
-   print_r($cursos);
-   echo "</pre>";
+
    if ($cursos == array()) {
       //echo 'Verifique la categoria seleccionda';
       die();
@@ -197,10 +195,6 @@ $section_course = required_param('section_course', PARAM_INT);
             
          }
       }
-      echo "<pre>";
-          print_r($all_data);
-         echo "</pre>";
-     die();
 
 
      
