@@ -41,6 +41,8 @@ include_once 'Classes/PHPExcel.php';
 */
    $categoria = array();
 
+   $role_config = $DB->get_record('config',  array('name' => 'reportpointsroleid'))->value;
+
    $sql_cursos = "SELECT course.id as Course_id,course.fullname AS Course
    ,context.id AS Context
    , COUNT(course.id) AS Students
@@ -51,7 +53,7 @@ include_once 'Classes/PHPExcel.php';
    JOIN {user} AS USER ON USER.id = asg.userid
    JOIN {course} AS course ON context.instanceid = course.id
    JOIN {course_categories} AS category ON course.category = category.id
-   WHERE asg.roleid = 5 
+   WHERE asg.roleid =  " . $role_config . " 
    AND category.id =".$categoryid."  
    GROUP BY course.id
    ORDER BY COUNT(course.id) DESC";

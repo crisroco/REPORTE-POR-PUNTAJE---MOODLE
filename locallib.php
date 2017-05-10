@@ -19,7 +19,7 @@ function reporte_grafico($categoria,$section_course){
    /**
     RETORNA LOS CURSOS DE LA CATEGORIA ELEGIDA Y CANTIDAD DE ALUMNOS MATRICULADOS
   */
-
+    $role_config = $DB->get_record('config',  array('name' => 'reportpointsroleid'))->value;
    $sql_cursos = "SELECT course.id as Course_id,course.fullname AS Course
    ,context.id AS Context
    , COUNT(course.id) AS Students
@@ -30,7 +30,7 @@ function reporte_grafico($categoria,$section_course){
    JOIN {user} AS USER ON USER.id = asg.userid
    JOIN {course} AS course ON context.instanceid = course.id
    JOIN {course_categories} AS category ON course.category = category.id
-   WHERE asg.roleid = 5 
+   WHERE asg.roleid = " . $role_config . " 
    AND category.id =".$categoria."  
    GROUP BY course.id
    ORDER BY COUNT(course.id) DESC";
