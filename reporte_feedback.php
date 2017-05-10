@@ -26,10 +26,10 @@ $filters->set_data($values);
 
 
 $title = get_string('pluginname','report_reportpoints');
-//$PAGE->requires->css('/report/reportpoints/assets/select2.css');
-//$PAGE->requires->css('/report/reportpoints/assets/style.css');
+$PAGE->requires->css('/report/reportpoints/assets/select2.css');
+$PAGE->requires->css('/report/reportpoints/assets/style.css');
 
-//$PAGE->requires->js_call_amd('report_reportpoints/module', 'init');
+$PAGE->requires->js_call_amd('report_reportpoints/module', 'init');
 
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
@@ -48,8 +48,8 @@ if ($filters->is_cancelled()) {
 
 $exporurl = new moodle_url('/report/reportpoints/reports_feedback.php');
 print $OUTPUT->header();
-   //echo "<script src='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js'></script>";
-   //echo "<link rel='stylesheet' type='text/css' href='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css'>";
+   echo "<script src='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js'></script>";
+   echo "<link rel='stylesheet' type='text/css' href='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css'>";
    $urll = $CFG->wwwroot.'/report/reportpoints/index.php';
    print html_writer::start_tag('div', array('class' => 'linkreprote'));
        print html_writer::link($urll, 'ir a Reporte de Participación',array('class' => 'lalal'));
