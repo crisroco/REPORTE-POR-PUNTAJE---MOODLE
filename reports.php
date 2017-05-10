@@ -13,10 +13,10 @@ require_login();
 
 $categoryid = required_param('categoryid', PARAM_INT);
 $section_course = required_param('section_course', PARAM_INT);
-
+/*
  header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   header('Content-Disposition: attachment;filename="Reporte de participacion.xlsx"');
-  header('Cache-Control: max-age=0');
+  header('Cache-Control: max-age=0');*/
 
 
 /**
@@ -193,10 +193,10 @@ $section_course = required_param('section_course', PARAM_INT);
             
          }
       }
-      /*echo "<pre>";
+      echo "<pre>";
           print_r($all_data);
-         echo "</pre>";*/
-     
+         echo "</pre>";
+     die();
 
 
      
