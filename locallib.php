@@ -9,17 +9,16 @@ global $DB, $CFG, $PAGE, $OUTPUT, $USER;
 
 require_login();
 
-$categoryid = required_param('categoryid', PARAM_INT);
-$section_course = required_param('section_course', PARAM_INT);
+//$categoria = required_param('categoria', PARAM_INT);
+//$section_course = required_param('section_course', PARAM_INT);
  
-
-
+function reporte_grafico($categoria,$section_course){
+  global $DB;
 
 
    /**
-   RETORNA LOS CURSOS DE LA CATEGORIA ELEGIDA Y CANTIDAD DE ALUMNOS MATRICULADOS
-*/
-   $categoria = array();
+    RETORNA LOS CURSOS DE LA CATEGORIA ELEGIDA Y CANTIDAD DE ALUMNOS MATRICULADOS
+  */
 
    $sql_cursos = "SELECT course.id as Course_id,course.fullname AS Course
    ,context.id AS Context
@@ -32,7 +31,7 @@ $section_course = required_param('section_course', PARAM_INT);
    JOIN {course} AS course ON context.instanceid = course.id
    JOIN {course_categories} AS category ON course.category = category.id
    WHERE asg.roleid = 5 
-   AND category.id =".$categoryid."  
+   AND category.id =".$categoria."  
    GROUP BY course.id
    ORDER BY COUNT(course.id) DESC";
 
@@ -190,84 +189,9 @@ $section_course = required_param('section_course', PARAM_INT);
             array_push($actividades, $actividad);
          //}
        }
-  }     
-  /*echo "<pre>";
-    print_r($datos_all);
-  echo "</pre>";*/
-
-echo "<script src='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js'></script>";
-echo "<link rel='stylesheet' type='text/css' href='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css'>";
-echo "<link rel='stylesheet' type='text/css' href='assets/style.css'>";
-$html = '';
-/*foreach ($datos_all as $key => $cursos) {
-  $html .= '<div class="course">';
-    $html .= '<h3 class="coursetitle">';
-      $html .= $key;
-    $html .= '</h3>';  
-  foreach ($cursos as $dat => $enc) {
-
-    foreach ($enc as $encu => $encuest) {      
-      $html .= '<div class="encuesta">';
-      if ($dat == 'dato1') {
-        $html .= '<h4 class="encuestatitle">';
-          $html .= $encu;
-        $html .= '</h4>';
-        foreach ($encuest as $preg => $pregunt) {
-          $html .= '<div class="pregunta">';
-            $html .='<p class="preguntatitle"/>'; 
-              $html .= $preg;
-          foreach ($pregunt as $alter => $alternat) {
-            $percent = $cursos['dato2'][$encu][$preg][$alter];
-
-                $html .= '<div class="alternativa">';
-                  $html .= '<div class="alttitle">';
-                    $html .= 'Alternativa '.$alter;
-                  $html .= '</div>';
-                  $html .= '<div class="cantpercent">';
-                    $html .= '<div class="altcant">';
-                      $html .= '<p class="vecestitle">';
-                      $html .= 'Veces marcado </p>';
-                      $html .= $alternat;
-                    $html .= '</div>';
-                    $html .= '<div class="altpercent">';
-                      $html .= '<p class="vecestitle">';
-                      $html .= 'Porcentaje </p>';
-                      $html .= '<div class="progress">
-                        <div class="progress-bar progress-bar-success progress-bar-striped" role="progressbar"
-                        aria-valuenow="'.$percent.'" aria-valuemin="0" aria-valuemax="100" style="width:'.$percent.'%">
-                          '.$percent.'% Marcados
-                        </div>
-                      </div>';
-                      //$html .= $percent;
-                    $html .= '</div>';
-                  $html .= '</div>';
-                $html .= '</div>';
-
-          }
-            
-          $html .= '</div>';
-        }
-
-      }
-
-      if ($dat == 'dato2') {
-        foreach ($encuest as $preg => $pregunt) {
-
-          foreach ($pregunt as $alter => $alternat) {
-
-          }
-
-        }
-      }
-      $html .= '</div>';
-
-    }
-
-
   }
-  $html .= '</div>';
-}*/ 
 
+  //########################################################################
 $datos_all2 = array();
 $canti_temp = array();
 foreach ($datos_all as $key => $cursos) {  
@@ -319,14 +243,89 @@ foreach ($datos_all as $key => $cursos) {
     }
   }  
 }
+//########################################################################
+
+  if ($datos_all == array()) {
+    return '<div class="alert alert-info">En esta Semana no se han registrado encuestas</div>';       
+  }else{    
+
+  echo "<script src='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js'></script>";
+  echo "<link rel='stylesheet' type='text/css' href='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css'>";
+  echo "<link rel='stylesheet' type='text/css' href='assets/style.css'>";
+  $html = '';
+  foreach ($datos_all2 as $key => $cursos) {
+    $html .= '<div class="course">';
+      $html .= '<h3 class="coursetitle">';
+        $html .= 'REPORTE GLOBAL DE RESPUESTAS POR ENCUESTA';
+      $html .= '</h3>';  
+    foreach ($cursos as $dat => $enc) {
+
+      foreach ($enc as $encu => $encuest) {      
+        $html .= '<div class="encuesta">';
+        if ($dat == 'dato1') {
+          $html .= '<h4 class="encuestatitle">';
+            $html .= $encu;
+          $html .= '</h4>';
+          foreach ($encuest as $preg => $pregunt) {
+            $html .= '<div class="pregunta">';
+              $html .='<p class="preguntatitle"/>'; 
+                $html .= $preg;
+            foreach ($pregunt as $alter => $alternat) {
+              $percent = $cursos['dato2'][$encu][$preg][$alter];
+
+                  $html .= '<div class="alternativa">';
+                    $html .= '<div class="alttitle">';
+                      $html .= 'Alternativa '.$alter;
+                    $html .= '</div>';
+                    $html .= '<div class="cantpercent">';
+                      $html .= '<div class="altcant">';
+                        $html .= '<p class="vecestitle">';
+                        $html .= 'Veces marcado </p>';
+                        $html .= $alternat;
+                      $html .= '</div>';
+                      $html .= '<div class="altpercent">';
+                        $html .= '<p class="vecestitle">';
+                        $html .= 'Porcentaje </p>';
+                        $html .= '<div class="progress">
+                          <div class="progress-bar progress-bar-success progress-bar-striped" role="progressbar"
+                          aria-valuenow="'.$percent.'" aria-valuemin="0" aria-valuemax="100" style="width:'.$percent.'%">
+                            '.$percent.'% Marcados
+                          </div>
+                        </div>';
+                        //$html .= $percent;
+                      $html .= '</div>';
+                    $html .= '</div>';
+                  $html .= '</div>';
+
+            }
+              
+            $html .= '</div>';
+          }
+
+        }
+
+        if ($dat == 'dato2') {
+          foreach ($encuest as $preg => $pregunt) {
+
+            foreach ($pregunt as $alter => $alternat) {
+
+            }
+
+          }
+        }
+        $html .= '</div>';
+
+      }
 
 
+    }
+    $html .= '</div>';
+  }    
 
+  return $html;
+  }   
 
-echo "<pre>";
-    print_r($datos_all2);
-  echo "</pre>";
-
+}
 
 
 

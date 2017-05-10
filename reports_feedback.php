@@ -341,11 +341,67 @@ include_once 'Classes/PHPExcel.php';
   print_r($datos_all);
 echo "</pre>";*/
 
+//########################################################################
+$datos_all2 = array();
+$canti_temp = array();
+foreach ($datos_all as $key => $cursos) {  
+          
+  foreach ($cursos as $dat => $enc) {
+
+    foreach ($enc as $encu => $encuest) {      
+      
+      if ($dat == 'dato1') {      
+                  
+        foreach ($encuest as $preg => $pregunt) {
+                    
+          foreach ($pregunt as $alter => $alternat) {
+            $datos_all2['global']['dato1'][$encu][$preg][$alter] += $alternat;
+            $canti_temp['global']['dato1'][$encu][$preg] += $datos_all[$key]['dato1'][$encu][$preg][$alter];
+            
+          }
+                      
+        }
+
+      }
+
+        
+    }
+  }  
+}
+
+foreach ($datos_all as $key => $cursos) {  
+          
+  foreach ($cursos as $dat => $enc) {
+
+    foreach ($enc as $encu => $encuest) {      
+      
+      if ($dat == 'dato2') {      
+                  
+        foreach ($encuest as $preg => $pregunt) {
+                    
+          foreach ($pregunt as $alter => $alternat) {
+            $datos_all2['global']['dato2'][$encu][$preg][$alter] = round(($datos_all2['global']['dato1'][$encu][$preg][$alter]/$canti_temp['global']['dato1'][$encu][$preg])*100,2);
+            
+            
+          }
+                      
+        }
+
+      }
+
+        
+    }
+  }  
+}
+//########################################################################
+
+
+
 $tr_curso = 1;
 $tr_encuesta = 2;
 $tr_pregunta = 4;
 $tr_percent = 6;
-foreach ($datos_all as $key => $cursos) {
+foreach ($datos_all2 as $key => $cursos) {
    $crutr = $tr_encuesta-1;
    $sheet2->getStyle('A'.$crutr.':B'.$crutr)->applyFromArray(
      array(
@@ -356,7 +412,7 @@ foreach ($datos_all as $key => $cursos) {
      )
    ); 
 
-   $sheet2->setCellValueByColumnAndRow(1, $tr_encuesta-1, $key); 
+   $sheet2->setCellValueByColumnAndRow(1, $tr_encuesta-1, 'REPORTE GLOBAL DE RESPUESTAS POR ENCUESTA'); 
    foreach ($cursos as $dat => $enc) {
       foreach ($enc as $encu => $encuest) {      
       $sum_tr = sizeof($encuest);

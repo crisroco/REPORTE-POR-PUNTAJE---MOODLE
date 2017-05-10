@@ -59,3 +59,15 @@ p.preguntatitle {
 	margin-right: 15px;
     border-right: 2px solid rgb(58, 58, 58);
 }
+
+.btnexcel {
+    text-align: center;
+}
+
+button.btn.btn-primary {
+    width: 32%;
+}
+
+form.formgraph {
+    margin-top: 15%;
+}

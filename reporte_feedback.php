@@ -2,7 +2,7 @@
 
 
 require_once(dirname(__FILE__).'/../../config.php');
-//require_once('locallib.php');
+require_once('locallib.php');
 require_once('forms.php');
 
 $categoria = optional_param('categoria',0,PARAM_INT);
@@ -48,20 +48,35 @@ if ($filters->is_cancelled()) {
 
 $exporurl = new moodle_url('/report/reportpoints/reports_feedback.php');
 print $OUTPUT->header();
-  
+   echo "<script src='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js'></script>";
+   echo "<link rel='stylesheet' type='text/css' href='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css'>";
    $urll = $CFG->wwwroot.'/report/reportpoints/index.php';
    print html_writer::start_tag('div', array('class' => 'linkreprote'));
        print html_writer::link($urll, 'ir a Reporte de Participación',array('class' => 'lalal'));
    print html_writer::end_tag('div');
   $filters->display();
 
-  if($data = $filters->get_data()){
 
-    print '<form action="'.$exporurl.'">';
-    print '<input type="hidden" value="'.$categoria.'" name="categoryid">';
-    print '<input type="hidden" value="'.$section_course.'" name="section_course">';
-    print '<button>Exportar Excel</button>';
-    print '</form>';
+  if($data = $filters->get_data()){
+    $hmtl = reporte_grafico($categoria,$section_course);
+
+   
+    
+      print '<form action="'.$exporurl.'" class="formgraph">';
+      print '<input type="hidden" value="'.$categoria.'" name="categoryid">';
+      print '<input type="hidden" value="'.$section_course.'" name="section_course">';
+       
+        
+        print '<div class="btnexcel">';
+        print '<button class="btn btn-primary">Exportar Excel</button>';
+        print '</div>';
+        print $hmtl;
+        print '<div class="btnexcel">';
+        print '<button class="btn btn-primary">Exportar Excel</button>';
+        print '</div>';
+
+      print '</form>';
+    
   }
 
 print $OUTPUT->footer();
