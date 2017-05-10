@@ -81,7 +81,7 @@ $section_course = required_param('section_course', PARAM_INT);
          //FLUJO DE FEEDBACK
          if ($activ == 7) {
             
-             $sql_feedback = "SELECT fb.id,  fb.name, fb.course, c.shortname as curname, cs.section as semana , cm.module 
+             $sql_feedback = "SELECT fb.id,  fb.name, fb.course, c.fullname as curname, cs.section as semana , cm.module 
                               from {feedback} as fb  
                               join {course_modules} as cm ON fb.id = cm.instance
                               join {course_sections} as cs ON cm.section = cs.id
@@ -97,7 +97,7 @@ $section_course = required_param('section_course', PARAM_INT);
          //FIN - FLUJO DE FEEDBACK
          //FLUJO DE TAREA 
          }elseif ($activ == 1) {
-            $sql_assign = "SELECT ass.id,  ass.name, ass.course, c.shortname as curname, cs.section as semana , cm.module 
+            $sql_assign = "SELECT ass.id,  ass.name, ass.course, c.fullname as curname, cs.section as semana , cm.module 
                               from {assign} as ass  
                               join {course_modules} as cm ON ass.id = cm.instance
                               join {course_sections} as cs ON cm.section = cs.id
@@ -138,7 +138,7 @@ $section_course = required_param('section_course', PARAM_INT);
             $datos_feedback = new stdClass();
             $datos_feedback->activity_name = $fb_name;
             $datos_feedback->tipo = 'Encuesta';
-            $datos_feedback->puntaje = $puntaje.'%';
+            $datos_feedback->puntaje = round($puntaje,2).'%';
             $datos_feedback->curname = $cur_name;
             array_push($all_data, $datos_feedback);
 
@@ -208,6 +208,7 @@ $section_course = required_param('section_course', PARAM_INT);
          $objWorkSheet = $phpexcel->getActiveSheet()->setTitle('Reporte de participacion');
 
          //$objWorkSheet->getColumnDimension('A')->setAutoSize(true);
+         $objWorkSheet->getColumnDimension('A')->setAutoSize(true);
          $objWorkSheet->getColumnDimension('B')->setAutoSize(true);
          $objWorkSheet->getColumnDimension('C')->setAutoSize(true);
          $objWorkSheet->getColumnDimension('D')->setAutoSize(true);
