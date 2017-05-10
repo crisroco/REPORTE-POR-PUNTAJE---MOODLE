@@ -39,6 +39,8 @@ $section_course = required_param('section_course', PARAM_INT);
    GROUP BY course.id
    ORDER BY COUNT(course.id) DESC";
 
+   echo $sql_cursos;
+
    $cursos = $DB->get_records_sql($sql_cursos);
 
    if ($cursos == array()) {
