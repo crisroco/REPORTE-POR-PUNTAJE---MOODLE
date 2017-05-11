@@ -73,7 +73,7 @@ function reporte_grafico($categoria,$section_course){
                         join {course_modules} as cm ON fb.id = cm.instance
                         join {course_sections} as cs ON cm.section = cs.id
                         join {course} as c ON cm.course = c.id
-                        where fb.course= $value->course_id AND c.id= $value->course_id AND fb.timeclose < $now AND cs.section = $section_course" ;
+                        where fb.course= $value->course_id AND c.id= $value->course_id AND cs.section = $section_course" ;
 
       $actividad = $DB->get_records_sql($sql_feedback);
 
