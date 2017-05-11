@@ -20,9 +20,9 @@ function reporte_grafico($categoria,$section_course){
     RETORNA LOS CURSOS DE LA CATEGORIA ELEGIDA Y CANTIDAD DE ALUMNOS MATRICULADOS
   */
     $role_config = $DB->get_record('config',  array('name' => 'reportpointsroleid'))->value;
-   $sql_cursos = "SELECT course.id as Course_id,course.fullname AS Course
-   ,context.id AS Context
-   , COUNT(course.id) AS Students
+   $sql_cursos = "SELECT course.id as Course_id,course.fullname AS course
+   ,context.id AS context
+   , COUNT(course.id) AS students
    ,category.name
    ,category.path
    FROM {role_assignments} AS asg
