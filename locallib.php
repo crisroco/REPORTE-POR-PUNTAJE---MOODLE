@@ -36,9 +36,6 @@ function reporte_grafico($categoria,$section_course){
    ORDER BY COUNT(course.id) DESC";
 
    $cursos = $DB->get_records_sql($sql_cursos);
-   echo "<pre>";
-   print_r($cursos);
-   echo "</pre>";
 
    if ($cursos == array()) {
       //echo 'Verifique la categoria seleccionda';
@@ -76,6 +73,9 @@ function reporte_grafico($categoria,$section_course){
 
       $actividad = $DB->get_records_sql($sql_feedback);
 
+   echo "<pre>";
+   print_r($actividad);
+   echo "</pre>";
 
       //PROCESAR CADA ENCUESTA
       
