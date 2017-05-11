@@ -26,10 +26,8 @@ $filters->set_data($values);
 
 
 $title = get_string('pluginname','report_reportpoints');
-$PAGE->requires->css('/report/reportpoints/assets/select2.css');
-$PAGE->requires->css('/report/reportpoints/assets/style.css');
 
-$PAGE->requires->js_call_amd('report_reportpoints/module', 'init');
+//$PAGE->requires->js_call_amd('report_reportpoints/module', 'init');
 
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
@@ -39,15 +37,12 @@ $PAGE->set_heading($title);
 if ($filters->is_cancelled()) {
   $returnurl = new moodle_url('/report/reportpoints/reporte_feedback.php');
   redirect($returnurl);
-} /*else if ($data = $filters->get_data()) { 
-   
-   $export = '/report/reportpoints/reports_feedback.php?categoryid='.$data->categoria.'&section_course='.$data->section_course;
-  $returnurl = new moodle_url($export);
-  redirect($returnurl);
-}*/
+}
 
 $exporurl = new moodle_url('/report/reportpoints/reports_feedback.php');
 print $OUTPUT->header();
+   echo "<script src='https://code.jquery.com/jquery-2.2.4.min.js' integrity='sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=' crossorigin='anonymous'></script>";
+   echo "<script src='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js'></script>";
    echo "<script src='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js'></script>";
    echo "<link rel='stylesheet' type='text/css' href='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css'>";
    $urll = $CFG->wwwroot.'/report/reportpoints/index.php';
@@ -56,9 +51,12 @@ print $OUTPUT->header();
    print html_writer::end_tag('div');
   $filters->display();
 
-
   if($data = $filters->get_data()){
+
     $hmtl = reporte_grafico($categoria,$section_course);
+    echo "<pre>";
+    print_r($filters->get_data());
+    echo "</pre>";
 
    
     
