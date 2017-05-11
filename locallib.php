@@ -77,9 +77,6 @@ function reporte_grafico($categoria,$section_course){
 
       $actividad = $DB->get_records_sql($sql_feedback);
 
-   echo $sql_feedback . "<pre>";
-   print_r($actividad);
-   echo "</pre>";
 
       //PROCESAR CADA ENCUESTA
       
