@@ -54,10 +54,6 @@ print $OUTPUT->header();
   if($data = $filters->get_data()){
 
     $hmtl = reporte_grafico($categoria,$section_course);
-    echo "<pre>";
-    print_r($filters->get_data());
-    echo "</pre>";
-
    
     
       print '<form action="'.$exporurl.'" class="formgraph">';
