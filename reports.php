@@ -154,13 +154,13 @@ $section_course = required_param('section_course', PARAM_INT);
 
             $valorMaximo = 0;
             foreach ($tarea_verification as $key => $value) {
-              if($value->timecreated >$valorMaximo){
-                $tmp = $tarea_verification[0];
-                $tarea_verification[0] = $tarea_verification[$key];
-                $tarea_verification[$key] = $tmp;
+              if($value->timecreated > $valorMaximo){
+                //$tmp = $tarea_verification[0];
+                //$tarea_verification[0] = $tarea_verification[$key];
+                //$tarea_verification[$key] = $tmp;
 
               }
-                $valorMaximo=$value->timecreated;
+              //$valorMaximo=$value->timecreated;
             }
 
             echo "<pre>";
