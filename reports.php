@@ -201,7 +201,7 @@ $section_course = required_param('section_course', PARAM_INT);
                if($días <= 0){
                   $puntaje = 100;
                }
-               echo $puntaje . "----<pre>";
+               echo ceil($dias). "-------" . $puntaje . "----<pre>";
                print_r($dias);
                echo "</pre>";die();
                /*if ($time_upload < $now) {
