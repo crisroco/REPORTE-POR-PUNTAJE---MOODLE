@@ -184,7 +184,7 @@ $section_course = required_param('section_course', PARAM_INT);
                if($dias <= 0){
                 $puntaje = 100;
                }
-               switch (ceil($dias * -1)) {
+               switch (ceil($dias)) {
                  case 1:
                    $puntaje = 80;
                  break;
