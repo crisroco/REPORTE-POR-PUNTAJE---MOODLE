@@ -153,14 +153,14 @@ $section_course = required_param('section_course', PARAM_INT);
             echo "<pre>";
             print_r($sql_tarea_verification);
             echo "</pre>";
-            $sql_tarea_verification = "SELECT subass.submission,subass.timecreated, ass.id, ass.name, ass.duedate  
+            $sql_tarea_verification = "SELECT subass.status,subass.timecreated, ass.id, ass.name, ass.duedate  
                                        from {assign} as ass
                                        join {assign_submission} as subass ON ass.id = subass.assignment 
-                                       where ass.id = $value->id";
-            echo "<pre>";
-            print_r($sql_tarea_verification);
-            echo "</pre>";die();
+                                       where ass.id = $value->id AND status = 'submitted'";
             $tarea_verification = $DB->get_records_sql($sql_tarea_verification);
+            echo "<pre>";
+            print_r($tarea_verification);
+            echo "</pre>";die();
 
             $valorMaximo = 0;
             foreach ($tarea_verification as $key => $value) {
