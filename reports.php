@@ -147,7 +147,7 @@ $section_course = required_param('section_course', PARAM_INT);
             $puntaje = 100;
             $now = microtime(true);
             
-            $sql_tarea_verification = "SELECT subass.status,subass.timecreated, ass.id, ass.name, ass.duedate  
+            $sql_tarea_verification = "SELECT subass.id,subass.status,subass.timecreated, ass.id, ass.name, ass.duedate  
                                        from {assign} as ass
                                        join {assign_submission} as subass ON ass.id = subass.assignment 
                                        where ass.id = $value->id AND status = 'submitted'";
@@ -164,14 +164,14 @@ $section_course = required_param('section_course', PARAM_INT);
               $valorMaximo=$value->timecreated;
             }
             
-            echo "<pre>";
-            print_r($tarea_verification);
-            echo "</pre>";die();
 
             while ( count($tarea_verification) > 1) {
                array_pop($tarea_verification);
             }
 
+            echo "<pre>";
+            print_r($tarea_verification);
+            echo "</pre>";die();
             foreach ($tarea_verification as $key => $value) {
 
                $time_upload = $value->duedate;
