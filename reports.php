@@ -198,7 +198,7 @@ $section_course = required_param('section_course', PARAM_INT);
                    $puntaje = 0;
                  break;
                }
-               if($días <= 0.0){
+               if($días <= -0.9){
                   $puntaje = 100;
                }
                echo "-------" . $puntaje . "----<pre>";
