@@ -198,11 +198,11 @@ $section_course = required_param('section_course', PARAM_INT);
                    $puntaje = 20;
                  break;
                }
-               if(ceil($días) > 4){
+               if(ceil($dias) > 4){
                   $puntaje = 0;
                }
-               echo "-------" . $puntaje . "----<pre>";
-               print_r(ceil($días));
+               echo $dias ."-------" . $puntaje . "----<pre>";
+               print_r(ceil($dias));
                echo "</pre>";die();
                /*if ($time_upload < $now) {
                   $puntaje = 100;
