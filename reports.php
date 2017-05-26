@@ -181,6 +181,9 @@ $section_course = required_param('section_course', PARAM_INT);
                $four_day = $three_day+86400;
 
                $dias = dias_transcurridos($value->duedate,$value->timecreated);
+               if($dias <= 0){
+                $puntaje = 100;
+               }
                switch (ceil($dias)) {
                  case 1:
                    $puntaje = 80;
@@ -194,13 +197,10 @@ $section_course = required_param('section_course', PARAM_INT);
                  case 4:
                    $puntaje = 20;
                  break;
-                 default:
-                   $puntaje = 0;
-                 break;
                }
-               /*if($días <= -0.9){
-                  $puntaje = 100;
-               }*/
+               if($días > 4){
+                  $puntaje = 0;
+               }
                echo "-------" . $puntaje . "----<pre>";
                print_r($dias);
                echo "</pre>";die();
