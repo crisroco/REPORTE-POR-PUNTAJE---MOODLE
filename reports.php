@@ -146,16 +146,26 @@ $section_course = required_param('section_course', PARAM_INT);
          }elseif ($value->module == 1) {
             $puntaje = 100;
             $now = microtime(true);
-            $sql_tarea_verification = "SELECT subfl.submission, ass.id, ass.name, ass.duedate  
+            $sql_tarea_verification = "SELECT subass.submission,subass.timecreated, ass.id, ass.name, ass.duedate  
                                        from {assign} as ass
-                                       join {assignsubmission_file} as subfl ON ass.id = subfl.assignment 
+                                       join {assign_submission} as subass ON ass.id = subass.assignment 
                                        where ass.id = $value->id";
             $tarea_verification = $DB->get_records_sql($sql_tarea_verification);
+
+            $valorMaximo = 0;
+            foreach ($tarea_verification as $key => $value) {
+              if($value->timecreated >$valorMaximo){
+                $tmp = $tarea_verification[0];
+                $tarea_verification[0] = $tarea_verification[$key];
+                $tarea_verification[$key] = $tmp;
+
+              }
+                $valorMaximo=$value->timecreated;
+            }
 
             echo "<pre>";
             print_r($tarea_verification);
             echo "</pre>";die();
-
             while ( count($tarea_verification) > 1) {
                array_pop($tarea_verification);
             }
