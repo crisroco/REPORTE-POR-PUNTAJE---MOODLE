@@ -14,9 +14,9 @@ require_login();
 $categoryid = required_param('categoryid', PARAM_INT);
 $section_course = required_param('section_course', PARAM_INT);
 
- header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-  header('Content-Disposition: attachment;filename="Reporte de participacion.xlsx"');
-  header('Cache-Control: max-age=0');
+ //header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+ //header('Content-Disposition: attachment;filename="Reporte de participacion.xlsx"');
+ //header('Cache-Control: max-age=0');
 
 
 /**
@@ -181,6 +181,9 @@ $section_course = required_param('section_course', PARAM_INT);
                $four_day = $three_day+86400;
 
                $dias = dias_transcurridos($value->duedate,$value->timecreated);
+               echo "<pre>";
+               print_r($dias);
+               echo "</pre>";die();
                switch ($dias) {
                  case 1:
                    $puntaje = 80;
