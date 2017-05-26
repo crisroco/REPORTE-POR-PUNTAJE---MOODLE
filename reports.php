@@ -181,7 +181,7 @@ $section_course = required_param('section_course', PARAM_INT);
                $four_day = $three_day+86400;
 
                $dias = dias_transcurridos($value->duedate,$value->timecreated);
-               switch (round($dias)) {
+               switch (ceil($dias)) {
                  case 1:
                    $puntaje = 80;
                  break;
@@ -314,5 +314,5 @@ $section_course = required_param('section_course', PARAM_INT);
   //$dias   = abs($dias); 
   //$dias = floor($dias);   
 
-  return $dias;
+  return $dias * -1;
 }
