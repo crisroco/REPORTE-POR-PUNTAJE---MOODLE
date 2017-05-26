@@ -307,8 +307,8 @@ $section_course = required_param('section_course', PARAM_INT);
 {
   
 
-  $fecha_i = gmdate("Y-m-d", $fecha_i);
-  $fecha_f = gmdate("Y-m-d", $fecha_f);
+  //$fecha_i = gmdate("Y-m-d", $fecha_i);
+  //$fecha_f = gmdate("Y-m-d", $fecha_f);
 
   $dias = (strtotime($fecha_i)-strtotime($fecha_f))/86400;
   //$dias   = abs($dias); 
