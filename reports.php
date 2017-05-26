@@ -198,7 +198,7 @@ $section_course = required_param('section_course', PARAM_INT);
                    $puntaje = 0;
                  break;
                }
-               if($días <= 0){
+               if($días < 1){
                   $puntaje = 100;
                }
                echo ceil($dias). "-------" . $puntaje . "----<pre>";
