@@ -314,5 +314,5 @@ $section_course = required_param('section_course', PARAM_INT);
   //$dias   = abs($dias); 
   //$dias = floor($dias);   
 
-  return $dias * -1;
+  return $dias;
 }
