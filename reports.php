@@ -152,6 +152,10 @@ $section_course = required_param('section_course', PARAM_INT);
                                        where ass.id = $value->id";
             $tarea_verification = $DB->get_records_sql($sql_tarea_verification);
 
+            echo "<pre>";
+            print_r($tarea_verification);
+            echo "</pre>";die();
+
             while ( count($tarea_verification) > 1) {
                array_pop($tarea_verification);
             }
