@@ -153,6 +153,8 @@ $section_course = required_param('section_course', PARAM_INT);
                                        where ass.id = $value->id AND status = 'submitted'";
             $tarea_verification = $DB->get_records_sql($sql_tarea_verification);
 
+            $tarea_verification = array_values($tarea_verification);
+
             $valorMaximo = 0;
             foreach ($tarea_verification as $key => $value) {
               if($value->timecreated > $valorMaximo){
