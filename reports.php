@@ -150,7 +150,24 @@ $section_course = required_param('section_course', PARAM_INT);
                                        from {assign} as ass
                                        join {assignsubmission_file} as subfl ON ass.id = subfl.assignment 
                                        where ass.id = $value->id";
+            $sql_tarea_verification = "SELECT subass.submission,subass.timecreated, ass.id, ass.name, ass.duedate  
+                                       from {assign} as ass
+                                       join {assign_submission} as subass ON ass.id = subass.assignment 
+                                       where ass.id = $value->id";
             $tarea_verification = $DB->get_records_sql($sql_tarea_verification);
+
+            //$valorMaximo = 0;
+            //foreach ($tarea_verification as $key => $value) {
+              //if($value->timecreated > $valorMaximo){
+                //$tmp = $tarea_verification[0];
+                //$tarea_verification[0] = $tarea_verification[$key];
+                //$tarea_verification[$key] = $tmp;
+
+              //}
+              //$valorMaximo=$value->timecreated;
+            //}
+
+            //$tarea_verification = $DB->get_records_sql($sql_tarea_verification);
 
             echo "<pre>";
             print_r($tarea_verification);
