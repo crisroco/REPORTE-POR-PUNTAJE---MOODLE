@@ -146,7 +146,7 @@ $section_course = required_param('section_course', PARAM_INT);
          }elseif ($value->module == 1) {
             $puntaje = 100;
             $now = microtime(true);
-            $sql_tarea_verification = "SELECT subfl.submission, ass.id, ass.name, ass.allowsubmissionsfromdate  
+            $sql_tarea_verification = "SELECT subfl.submission, ass.id, ass.name, ass.duedate  
                                        from {assign} as ass
                                        join {assignsubmission_file} as subfl ON ass.id = subfl.assignment 
                                        where ass.id = $value->id";
@@ -158,7 +158,7 @@ $section_course = required_param('section_course', PARAM_INT);
 
             foreach ($tarea_verification as $key => $value) {
 
-               $time_upload = $value->allowsubmissionsfromdate;
+               $time_upload = $value->duedate;
                $one_day = $time_upload+86400;
                $two_day = $one_day+86400;
                $three_day = $two_day+86400;
