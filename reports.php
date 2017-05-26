@@ -145,7 +145,6 @@ $section_course = required_param('section_course', PARAM_INT);
 
          }elseif ($value->module == 1) {
             $puntaje = 100;
-            $now = microtime(true);
             
             $sql_tarea_verification = "SELECT subass.id,subass.status,subass.timecreated, ass.id, ass.name, ass.duedate  
                                        from {assign} as ass
@@ -157,13 +156,13 @@ $section_course = required_param('section_course', PARAM_INT);
 
             $valorMaximo = 0;
             foreach ($tarea_verification as $key => $value) {
-              if($value->timecreated > $valorMaximo){
+              if($value->timecreated < $valorMaximo){
                 $tmp = $tarea_verification[0];
                 $tarea_verification[0] = $tarea_verification[$key];
                 $tarea_verification[$key] = $tmp;
 
               }
-              $valorMaximo=$value->timecreated;
+              $valorMaximo = $value->timecreated;
             }
             
 
@@ -171,10 +170,9 @@ $section_course = required_param('section_course', PARAM_INT);
                array_pop($tarea_verification);
             }
 
-            echo "<pre>";
-            print_r($tarea_verification);
-            echo "</pre>";die();
             foreach ($tarea_verification as $key => $value) {
+
+               $now = $value->timecreated;
 
                $time_upload = $value->duedate;
                $one_day = $time_upload+86400;
@@ -182,7 +180,28 @@ $section_course = required_param('section_course', PARAM_INT);
                $three_day = $two_day+86400;
                $four_day = $three_day+86400;
 
-               if ($time_upload < $now) {
+               $dias = dias_transcurridos($value->duedate,$value->timecreated);
+               switch ($dias) {
+                 case 1:
+                   $puntaje = 80;
+                 break;
+                 case 2:
+                   $puntaje = 60;
+                 break;
+                 case 3:
+                   $puntaje = 40;
+                 break;
+                 case 4:
+                   $puntaje = 20;
+                 break;
+                 default:
+                   $puntaje = 0;
+                 break;
+               }
+               if($días <= 0){
+                  $puntaje = 100;
+               }
+               /*if ($time_upload < $now) {
                   $puntaje = 100;
                }elseif ($now == $one_day) {
                   $puntaje = 80;
@@ -194,7 +213,7 @@ $section_course = required_param('section_course', PARAM_INT);
                   $puntaje = 20;                  
                }else{
                   $puntaje = 0;                  
-               }   
+               } */  
             
 
                $ass_name = $value->name;
@@ -280,3 +299,17 @@ $section_course = required_param('section_course', PARAM_INT);
         $writer->save('php://output');
 
  
+
+ function dias_transcurridos($fecha_i,$fecha_f)
+{
+  
+
+  $fecha_i = gmdate("Y-m-d", $fecha_i);
+  $fecha_f = gmdate("Y-m-d", $fecha_f);
+
+  $dias = (strtotime($fecha_i)-strtotime($fecha_f))/86400;
+  //$dias   = abs($dias); 
+  //$dias = floor($dias);   
+
+  return $dias * -1;
+}
