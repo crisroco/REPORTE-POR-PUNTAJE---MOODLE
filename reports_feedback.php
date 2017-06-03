@@ -103,6 +103,16 @@ include_once 'Classes/PHPExcel.php';
 
       $actividad = $DB->get_records_sql($sql_feedback);
 
+      $sql_alter = "SELECT * FROM {feedback_item} WHERE feedback = " . array_values($actividad)[0]->id . " LIMIT 1";
+
+      $alterstotal = $DB->get_record_sql($sql_alter);
+
+      $alterstotal->presentation = str_replace("r>>>>>", "", $alterstotal->presentation);
+
+      $alterstotal->presentation = explode('|', $alterstotal->presentation);
+
+      $alterstotal = $alterstotal->presentation;
+
       //IMPRIMIR TITULOS DE COLUMNAS - DATOS USUARIO
       $titulos = array('NOMBRE', 'APELLIDO');
       $td_titulos = 0;
@@ -446,7 +456,8 @@ foreach ($datos_all2 as $key => $cursos) {
             foreach ($pregunt as $alter => $alternat) {
                $tr_temp3 = $tr_pregunta+1;
                $tr_temp4 = $tr_pregunta+2;
-               $sheet2->setCellValueByColumnAndRow($td_alter, $tr_pregunta, 'Respuesta '.$cont);
+               //$sheet2->setCellValueByColumnAndRow($td_alter, $tr_pregunta, 'Respuesta '.$cont);
+               $sheet2->setCellValueByColumnAndRow($td_alter, $tr_pregunta, $alterstotal[$cont-1]);
                $borderr = array(
                  'borders' => array(
                    'allborders' => array(
