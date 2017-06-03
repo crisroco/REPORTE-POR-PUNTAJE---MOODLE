@@ -74,6 +74,18 @@ function reporte_grafico($categoria,$section_course){
 
       $actividad = $DB->get_records_sql($sql_feedback);
 
+      $sql_alter = "SELECT * FROM {feedback_item} WHERE feedback = " . array_values($actividad)[0]->id . " LIMIT 1";
+
+      $alterstotal = $DB->get_record_sql($sql_alter);
+
+      $alterstotal->presentation = str_replace(" r>>>>>", "", $alterstotal->presentation);
+
+      $alterstotal->presentation = explode('|', $alterstotal->presentation);
+
+      $alterstotal = $alterstotal->presentation;
+
+
+
 
       //PROCESAR CADA ENCUESTA
       
@@ -272,20 +284,12 @@ foreach ($datos_all as $key => $cursos) {
               $html .='<p class="preguntatitle"/>'; 
                 $html .= $preg;
             foreach ($pregunt as $alter => $alternat) {
-              echo "<pre>";
-              print_r($cursos['dato2']);
-              echo "</pre>";
-              echo "<pre>";
-              print_r($cursos['dato2'][$encu]);
-              echo "</pre>";
-              echo "<pre>";
-              print_r($cursos['dato2'][$encu][$preg]);
-              echo "</pre>";
               $percent = $cursos['dato2'][$encu][$preg][$alter];
 
                   $html .= '<div class="alternativa">';
                     $html .= '<div class="alttitle">';
-                      $html .= 'Alternativa '.$alter;
+                      //$html .= 'Alternativa '.$alter;
+                      $html .= $alterstotal[$alter-1];
                     $html .= '</div>';
                     $html .= '<div class="cantpercent">';
                       $html .= '<div class="altcant">';
