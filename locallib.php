@@ -78,7 +78,7 @@ function reporte_grafico($categoria,$section_course){
 
       $alterstotal = $DB->get_record_sql($sql_alter);
 
-      $alterstotal->presentation = str_replace(" r>>>>>", "", $alterstotal->presentation);
+      $alterstotal->presentation = str_replace("r>>>>>", "", $alterstotal->presentation);
 
       $alterstotal->presentation = explode('|', $alterstotal->presentation);
 
