@@ -272,6 +272,9 @@ foreach ($datos_all as $key => $cursos) {
               $html .='<p class="preguntatitle"/>'; 
                 $html .= $preg;
             foreach ($pregunt as $alter => $alternat) {
+              echo "<pre>";
+              print_r($cursos['dato2'][$encu][$preg]);
+              echo "</pre>";
               $percent = $cursos['dato2'][$encu][$preg][$alter];
 
                   $html .= '<div class="alternativa">';
