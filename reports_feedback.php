@@ -112,6 +112,9 @@ include_once 'Classes/PHPExcel.php';
       $alterstotal->presentation = explode('|', $alterstotal->presentation);
 
       $alterstotal = $alterstotal->presentation;
+      echo "<pre>";
+      print_r($alterstotal);
+      echo "</pre>";
 
       //IMPRIMIR TITULOS DE COLUMNAS - DATOS USUARIO
       $titulos = array('NOMBRE', 'APELLIDO');
@@ -442,7 +445,7 @@ foreach ($datos_all2 as $key => $cursos) {
            $pregcont = 1;
            foreach ($encuest as $preg => $pregunt) {
 
-            $sheet2->setCellValueByColumnAndRow(1,$tr_pregunta-1, 'PREGUNTA'.$pregcont);
+            $sheet2->setCellValueByColumnAndRow(1,$tr_pregunta-1, 'PREGUNTA '.$pregcont);
             $sheet2->setCellValueByColumnAndRow(2,$tr_pregunta-1, 'RESPUESTAS');
             $sheet2->setCellValueByColumnAndRow(1,$tr_pregunta, $preg);
             $tr_trmp1 = $tr_pregunta+1;
