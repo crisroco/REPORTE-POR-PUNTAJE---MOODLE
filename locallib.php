@@ -273,6 +273,12 @@ foreach ($datos_all as $key => $cursos) {
                 $html .= $preg;
             foreach ($pregunt as $alter => $alternat) {
               echo "<pre>";
+              print_r($cursos['dato2']);
+              echo "</pre>";
+              echo "<pre>";
+              print_r($cursos['dato2'][$encu]);
+              echo "</pre>";
+              echo "<pre>";
               print_r($cursos['dato2'][$encu][$preg]);
               echo "</pre>";
               $percent = $cursos['dato2'][$encu][$preg][$alter];
