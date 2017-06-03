@@ -457,7 +457,7 @@ foreach ($datos_all2 as $key => $cursos) {
                $tr_temp3 = $tr_pregunta+1;
                $tr_temp4 = $tr_pregunta+2;
                //$sheet2->setCellValueByColumnAndRow($td_alter, $tr_pregunta, 'Respuesta '.$cont . '--'.json_encode($alterstotal));
-               $sheet2->setCellValueByColumnAndRow($td_alter, $tr_pregunta, trim($alterstotal[$cont]));
+               $sheet2->setCellValueByColumnAndRow($td_alter, $tr_pregunta, trim($alterstotal[$cont-1]));
                $borderr = array(
                  'borders' => array(
                    'allborders' => array(
