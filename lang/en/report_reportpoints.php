@@ -9,4 +9,6 @@ $string['reporte_participacion'] = 'Reporte de participacion';
 $string['section_course'] = 'Semana';
 $string['course_category'] = 'Categoria de curso';
 $string['type'] = 'tipo';
+$string['cantsem'] = 'Cantidad de Semanas';
+$string['cantsemdesc'] = 'Colocar la cantidad de semanas con la que se trabajará.';
 

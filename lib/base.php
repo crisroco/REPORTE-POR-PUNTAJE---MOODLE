@@ -56,6 +56,8 @@ class moo_moodle_reportpoints
         $temp = new admin_settingpage('reportpointssettings', $me->get_string('settings'));
         $temp->add(new admin_setting_configselect('reportpointsroleid', $me->get_string('insertidrole'),
                        $me->get_string('insertidroledesc'), null, $role));
+        $temp->add(new admin_setting_configtext('reportpointscantsem', $me->get_string('cantsem'),
+                       $me->get_string('cantsemdesc'), 14, PARAM_INT));
         
         $admin->add('reportes',$temp);
     }
