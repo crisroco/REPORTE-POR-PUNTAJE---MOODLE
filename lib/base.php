@@ -48,11 +48,11 @@ class moo_moodle_reportpoints
         }
         $admin->add('reports', new admin_category('reportes', $me->get_string('pluginname')));
 		$admin->add('reportes',
-		      new admin_externalpage('reportpoints',$me->get_string('reporte_encuesta'),
-		      $me->config->wwwroot . "/report/reportpoints/reporte_feedback.php",'report/reportpoints:view'));
-		$admin->add('reportes',
 		      new admin_externalpage('reportpoints2',$me->get_string('reporte_participacion'),
 		      $me->config->wwwroot . "/report/reportpoints/index.php",'report/reportpoints:view'));
+        $admin->add('reportes',
+              new admin_externalpage('reportpoints',$me->get_string('reporte_encuesta'),
+              $me->config->wwwroot . "/report/reportpoints/reporte_feedback.php",'report/reportpoints:view'));
         $temp = new admin_settingpage('reportpointssettings', $me->get_string('settings'));
         $temp->add(new admin_setting_configselect('reportpointsroleid', $me->get_string('insertidrole'),
                        $me->get_string('insertidroledesc'), null, $role));
