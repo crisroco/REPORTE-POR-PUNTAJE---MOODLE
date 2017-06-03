@@ -14,9 +14,9 @@ require_login();
 $categoryid = required_param('categoryid', PARAM_INT);
 $section_course = required_param('section_course', PARAM_INT);
 
- header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
- header('Content-Disposition: attachment;filename="Reporte de participacion.xlsx"');
- header('Cache-Control: max-age=0');
+ //header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+ //header('Content-Disposition: attachment;filename="Reporte de participacion.xlsx"');
+ //header('Cache-Control: max-age=0');
 
 
 /**
@@ -74,7 +74,10 @@ $section_course = required_param('section_course', PARAM_INT);
          //solo debe haber una encuesta o una tarea por semana
          $tipo_actividad = $DB->get_record_sql($type_activity);
         
-         
+         echo $type_activity;
+         echo "-----<pre>";
+         print_r($tipo_actividad);
+         echo "</pre>";
          
          if (is_object($tipo_actividad)) {
             $activ = $tipo_actividad->module;
@@ -296,7 +299,7 @@ $section_course = required_param('section_course', PARAM_INT);
 
          $writer = PHPExcel_IOFactory::createWriter($phpexcel, 'Excel2007');
         $writer->setIncludeCharts(TRUE);
-        $writer->save('php://output');
+        //$writer->save('php://output');
 
  
 
