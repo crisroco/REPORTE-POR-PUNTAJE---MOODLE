@@ -153,7 +153,7 @@ $section_course = required_param('section_course', PARAM_INT);
 
             $tarea_verification = array_values($tarea_verification);
 
-            echo "-----<pre>";
+            echo "total-----<pre>";
             print_r($tarea_verification);
             echo "</pre>";
 
@@ -168,26 +168,19 @@ $section_course = required_param('section_course', PARAM_INT);
               $valorMaximo = $value->timecreated;
             }
             
-            echo "----<pre>";
+            echo "ulti----<pre>";
             print_r($tarea_verification);
             echo "</pre>";
             while ( count($tarea_verification) > 1) {
                array_pop($tarea_verification);
             }
 
-            echo "-----<pre>";
+            echo "only-----<pre>";
             print_r($tarea_verification);
             echo "</pre>";
 
             foreach ($tarea_verification as $key => $value) {
 
-               $now = $value->timecreated;
-
-               $time_upload = $value->duedate;
-               $one_day = $time_upload+86400;
-               $two_day = $one_day+86400;
-               $three_day = $two_day+86400;
-               $four_day = $three_day+86400;
 
                $dias = dias_transcurridos($value->duedate,$value->timecreated);
                $dias = number_format($dias, 2);
