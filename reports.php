@@ -145,7 +145,7 @@ $section_course = required_param('section_course', PARAM_INT);
          }elseif ($value->module == 1) {
             $puntaje = 100;
             
-            $sql_tarea_verification = "SELECT subass.id,subass.status,subass.timecreated, ass.id as 'idass', ass.name, ass.duedate  
+            $sql_tarea_verification = "SELECT subass.id,subass.status,subass.timemodified, ass.id as 'idass', ass.name, ass.duedate  
                                        from {assign} as ass
                                        join {assign_submission} as subass ON ass.id = subass.assignment 
                                        where ass.id = $value->id AND status = 'submitted'";
@@ -159,13 +159,13 @@ $section_course = required_param('section_course', PARAM_INT);
 
             $valorMaximo = 0;
             foreach ($tarea_verification as $key => $value) {
-              if($value->timecreated < $valorMaximo){
+              if($value->timemodified < $valorMaximo){
                 $tmp = $tarea_verification[0];
                 $tarea_verification[0] = $tarea_verification[$key];
                 $tarea_verification[$key] = $tmp;
 
               }
-              $valorMaximo = $value->timecreated;
+              $valorMaximo = $value->timemodified;
             }
             
             echo "ulti----<pre>";
@@ -179,13 +179,13 @@ $section_course = required_param('section_course', PARAM_INT);
             print_r($tarea_verification);
             echo "</pre>";
 
-            foreach ($tarea_verification as $key => $value) {
+            foreach ($tarea_verification as $key => $vaa) {
 
 
-               $dias = dias_transcurridos($value->duedate,$value->timecreated);
+               $dias = dias_transcurridos($vaa->duedate,$vaa->timemodified);
                $dias = number_format($dias, 2);
                echo "++++<pre>";
-               print_r($value);
+               print_r($vaa);
                echo "</pre>****" . $dias;
                if($dias <= 0){
                 $puntaje = 100;
@@ -222,7 +222,7 @@ $section_course = required_param('section_course', PARAM_INT);
                } */  
             
 
-               $ass_name = $value->name;
+               $ass_name = $vaa->name;
 
                $datos_tarea = new stdClass();
                $datos_tarea->activity_name = $ass_name;
