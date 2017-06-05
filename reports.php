@@ -180,6 +180,7 @@ $section_course = required_param('section_course', PARAM_INT);
                $four_day = $three_day+86400;
 
                $dias = dias_transcurridos($value->duedate,$value->timecreated);
+               $dias = number_format($dias, 2);
                if($dias <= 0){
                 $puntaje = 100;
                }
