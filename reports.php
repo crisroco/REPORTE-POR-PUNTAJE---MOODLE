@@ -145,7 +145,7 @@ $section_course = required_param('section_course', PARAM_INT);
          }elseif ($value->module == 1) {
             $puntaje = 100;
             
-            $sql_tarea_verification = "SELECT subass.id,subass.status,subass.timecreated, ass.id, ass.name, ass.duedate  
+            $sql_tarea_verification = "SELECT subass.id,subass.status,subass.timecreated, ass.id as 'idass', ass.name, ass.duedate  
                                        from {assign} as ass
                                        join {assign_submission} as subass ON ass.id = subass.assignment 
                                        where ass.id = $value->id AND status = 'submitted'";
